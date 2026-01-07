@@ -102,20 +102,6 @@ export default function DashboardPage() {
       return matchesState && matchesCity && matchesSearch;
     });
     
-    // Log para debug
-    console.log('=== FILTRO DEBUG ===');
-    console.log('Estado selecionado:', selectedState || 'Todos');
-    console.log('ONGs no filtro:', filtered.length);
-    console.log('Estados nas ONGs filtradas:', [...new Set(filtered.map(o => o.stateCode))]);
-    
-    // Verificar se há alguma ONG de outro estado
-    if (selectedState) {
-      const ongErrada = filtered.find(o => o.stateCode.toUpperCase() !== selectedState.toUpperCase());
-      if (ongErrada) {
-        console.error('❌ ONG COM ESTADO ERRADO NO FILTRO:', ongErrada.name, ongErrada.stateCode);
-      }
-    }
-    
     return filtered;
   }, [selectedState, selectedCity, searchTerm, ongs]);
 
@@ -155,26 +141,31 @@ export default function DashboardPage() {
       .slice(0, 10);
   }, [filteredONGs]);
 
-  // Selecionar automaticamente todas as ONGs filtradas quando mudar o filtro de estado ou cidade
+  // Selecionar automaticamente todas as ONGs filtradas quando mudar o filtro de estado, cidade ou busca por nome
   useEffect(() => {
-    if (selectedState || selectedCity) {
+    const hasActiveFilter = selectedState || selectedCity || searchTerm;
+    
+    if (hasActiveFilter) {
       // Se há filtro ativo, seleciona todas as ONGs que correspondem ao filtro
       setSelectedONGs(filteredONGs);
-      setIsFilterSelection(true); // Marca como seleção automática
+      setIsFilterSelection(true);
     } else {
       // Se não há filtro, limpa a seleção
       setSelectedONGs([]);
       setIsFilterSelection(false);
     }
-  }, [selectedState, selectedCity, filteredONGs]);
+  }, [selectedState, selectedCity, searchTerm, filteredONGs]);
 
   // Handlers
   const handleONGClick = (ong: ONG) => {
     // Só permite selecionar se a ONG corresponde ao filtro atual
     const matchesState = !selectedState || ong.stateCode.toUpperCase() === selectedState.toUpperCase();
     const matchesCity = !selectedCity || ong.city === selectedCity;
+    const matchesSearch = !searchTerm || 
+      ong.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (ong.shortName && ong.shortName.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    if (!matchesState || !matchesCity) {
+    if (!matchesState || !matchesCity || !matchesSearch) {
       return;
     }
     
@@ -198,7 +189,10 @@ export default function DashboardPage() {
     const validOngs = selectedOngs.filter(ong => {
       const matchesState = !selectedState || ong.stateCode.toUpperCase() === selectedState.toUpperCase();
       const matchesCity = !selectedCity || ong.city === selectedCity;
-      return matchesState && matchesCity;
+      const matchesSearch = !searchTerm || 
+        ong.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (ong.shortName && ong.shortName.toLowerCase().includes(searchTerm.toLowerCase()));
+      return matchesState && matchesCity && matchesSearch;
     });
     
     setIsFilterSelection(false); // Marca como seleção manual
