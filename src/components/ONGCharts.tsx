@@ -1,6 +1,8 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 interface ChartData {
   name: string;
@@ -19,6 +21,19 @@ const COLORS = [
 ];
 
 export default function ONGCharts({ stateData, cityData, selectedState }: ONGChartsProps) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Cores dinâmicas baseadas no tema
+  const tickColor = mounted && resolvedTheme === 'dark' ? '#E5E7EB' : '#6B7280';
+  const gridColor = mounted && resolvedTheme === 'dark' ? '#374151' : '#E5E7EB';
+  const tooltipBg = mounted && resolvedTheme === 'dark' ? '#1F2937' : 'white';
+  const tooltipTextColor = mounted && resolvedTheme === 'dark' ? '#F9FAFB' : '#1F2937';
+
   const stateChartData: ChartData[] = stateData.map(item => ({
     name: item.stateCode,
     value: item.count,
@@ -48,28 +63,28 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
               data={stateChartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" className="dark:opacity-20" />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis 
                 dataKey="name" 
                 angle={-45} 
                 textAnchor="end" 
                 interval={0}
-                tick={{ fontSize: 12, fill: '#6B7280' }}
-                tickLine={{ stroke: '#E5E7EB' }}
+                tick={{ fontSize: 12, fill: tickColor }}
+                tickLine={{ stroke: gridColor }}
               />
               <YAxis 
-                tick={{ fontSize: 12, fill: '#6B7280' }}
-                tickLine={{ stroke: '#E5E7EB' }}
+                tick={{ fontSize: 12, fill: tickColor }}
+                tickLine={{ stroke: gridColor }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'white',
+                  backgroundColor: tooltipBg,
                   border: 'none',
                   borderRadius: '12px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
                   padding: '12px 16px',
                 }}
-                labelStyle={{ fontWeight: 'bold', color: '#1F2937' }}
+                labelStyle={{ fontWeight: 'bold', color: tooltipTextColor }}
                 formatter={(value) => [`${value} ONGs`, 'Quantidade']}
               />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
@@ -95,28 +110,28 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
               layout="vertical"
               margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontal={true} vertical={false} className="dark:opacity-20" />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={true} vertical={false} />
               <XAxis 
                 type="number"
-                tick={{ fontSize: 12, fill: '#6B7280' }}
-                tickLine={{ stroke: '#E5E7EB' }}
+                tick={{ fontSize: 12, fill: tickColor }}
+                tickLine={{ stroke: gridColor }}
               />
               <YAxis 
                 dataKey="name" 
                 type="category"
-                tick={{ fontSize: 12, fill: '#6B7280' }}
-                tickLine={{ stroke: '#E5E7EB' }}
+                tick={{ fontSize: 12, fill: tickColor }}
+                tickLine={{ stroke: gridColor }}
                 width={90}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'white',
+                  backgroundColor: tooltipBg,
                   border: 'none',
                   borderRadius: '12px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
                   padding: '12px 16px',
                 }}
-                labelStyle={{ fontWeight: 'bold', color: '#1F2937' }}
+                labelStyle={{ fontWeight: 'bold', color: tooltipTextColor }}
                 formatter={(value) => [`${value} ONGs`, 'Quantidade']}
               />
               <Bar dataKey="value" radius={[0, 4, 4, 0]}>

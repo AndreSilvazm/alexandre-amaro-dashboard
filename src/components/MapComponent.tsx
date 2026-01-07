@@ -120,19 +120,19 @@ function MapLegend({ visibleStates }: { visibleStates: string[] }) {
   if (legendStates.length === 0) return null;
 
   return (
-    <div className="absolute bottom-4 left-4 z-[1000] bg-white rounded-xl shadow-lg p-4 max-h-[300px] overflow-y-auto">
-      <h4 className="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-[#0d2857]"></span>
+    <div className="absolute bottom-4 left-4 z-[10] bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 max-h-[300px] overflow-y-auto">
+      <h4 className="font-bold text-gray-800 dark:text-white text-sm mb-3 flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-[#0d2857] dark:bg-blue-400"></span>
         Legenda por Estado
       </h4>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
         {legendStates.map(([code, { color, name }]) => (
           <div key={code} className="flex items-center gap-2 text-xs">
             <div
-              className="w-3 h-3 rounded-full flex-shrink-0 border-2 border-white shadow-sm"
+              className="w-3 h-3 rounded-full flex-shrink-0 border-2 border-white dark:border-gray-700 shadow-sm"
               style={{ backgroundColor: color }}
             />
-            <span className="text-gray-600 truncate" title={name}>
+            <span className="text-gray-600 dark:text-gray-300 truncate" title={name}>
               {code} - {name}
             </span>
           </div>
@@ -255,13 +255,13 @@ export default function MapComponent({ ongs, selectedONGs, onONGClick, onBoxSele
   return (
     <div className="relative h-full w-full">
       {/* Box Select Controls */}
-      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+      <div className="absolute top-4 right-4 z-[10] flex flex-col gap-2">
         <button
           onClick={toggleBoxSelectMode}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-lg transition-all ${
             boxSelectMode
               ? 'bg-[#0d2857] text-white hover:bg-[#022873]'
-              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
           }`}
           title={boxSelectMode ? 'Desativar seleção por área' : 'Ativar seleção por área'}
         >
@@ -297,7 +297,7 @@ export default function MapComponent({ ongs, selectedONGs, onONGClick, onBoxSele
 
       {/* Box Select Mode Indicator */}
       {boxSelectMode && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-[#0d2857] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg animate-pulse">
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[10] bg-[#0d2857] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg animate-pulse">
           🖱️ Clique e arraste para selecionar ONGs na área
         </div>
       )}
