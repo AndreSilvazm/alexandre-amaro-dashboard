@@ -315,7 +315,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Header lastUpdate={lastUpdate} onRefresh={loadData} isLoading={isLoading} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -389,11 +389,11 @@ export default function DashboardPage() {
         />
 
         {/* Map Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 transition-colors duration-300">
+          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-[#0d2857]"></span>
             Mapa de ONGs
-            <span className="text-sm font-normal text-gray-500 ml-2">
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
               (Clique em um marcador ou use a seleção por área)
             </span>
           </h3>
@@ -427,23 +427,40 @@ export default function DashboardPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 mt-12">
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 mt-12 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               © 2026 FEBRACA - Federação Brasileira da Causa Animal. Todos os direitos reservados.
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-sm text-gray-500 hover:text-[#0d2857] transition-colors">
+              <a href="#" className="text-sm text-gray-500 dark:text-gray-400 hover:text-[#0d2857] dark:hover:text-blue-400 transition-colors">
                 Política de Privacidade
               </a>
-              <a href="#" className="text-sm text-gray-500 hover:text-[#0d2857] transition-colors">
+              <a href="#" className="text-sm text-gray-500 dark:text-gray-400 hover:text-[#0d2857] dark:hover:text-blue-400 transition-colors">
                 Termos de Uso
               </a>
-              <a href="https://febraca.org.br" target="_blank" rel="noopener noreferrer" className="text-sm text-[#0d2857] hover:text-[#022873] font-medium transition-colors">
+              <a href="https://febraca.org.br" target="_blank" rel="noopener noreferrer" className="text-sm text-[#0d2857] dark:text-blue-400 hover:text-[#022873] dark:hover:text-blue-300 font-medium transition-colors">
                 febraca.org.br
               </a>
             </div>
+          </div>
+          {/* Desenvolvido por */}
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-center gap-2">
+            <span className="text-xs text-gray-400 dark:text-gray-500">Desenvolvido por</span>
+            <a 
+              href="https://arcanimal.com.br" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity"
+            >
+              <img 
+                src="https://arcanimal.com.br/assets/icons/logo.jpg" 
+                alt="ArcAnimal" 
+                className="w-5 h-5 rounded"
+              />
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">ArcAnimal</span>
+            </a>
           </div>
         </div>
       </footer>

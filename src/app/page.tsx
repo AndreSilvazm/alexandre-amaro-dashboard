@@ -211,7 +211,7 @@ function ContactModal({
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
+      <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
         {/* Header colorido */}
         <div className="bg-gradient-to-r from-[#0d2857] to-emerald-500 px-6 py-8 text-white text-center">
           <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -242,8 +242,8 @@ function ContactModal({
 
         {/* Conteúdo */}
         <div className="p-6">
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-            <p className="text-amber-800 text-sm leading-relaxed">
+          <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl p-4 mb-6">
+            <p className="text-amber-800 dark:text-amber-300 text-sm leading-relaxed">
               {isPasswordReset ? (
                 <>
                   <strong>🔐 Por questões de segurança</strong>, a recuperação de senha é feita diretamente com seu contato na FEBRACA.
@@ -256,7 +256,7 @@ function ContactModal({
             </p>
           </div>
 
-          <p className="text-gray-600 text-center mb-6">
+          <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
             {isPasswordReset 
               ? 'Entre em contato com a equipe FEBRACA para redefinir sua senha:'
               : 'Para solicitar acesso, entre em contato com nossa equipe:'
@@ -295,21 +295,21 @@ function ContactModal({
 
             <a
               href="tel:+551199999999"
-              className="flex items-center gap-4 p-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all group"
+              className="flex items-center gap-4 p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl transition-all group"
             >
-              <div className="w-12 h-12 bg-gray-200 group-hover:bg-gray-300 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 group-hover:bg-gray-300 dark:group-hover:bg-gray-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Phone className="w-6 h-6" />
               </div>
               <div>
                 <p className="font-semibold">Ligar</p>
-                <p className="text-sm text-gray-500">(11) 9999-9999</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">(11) 9999-9999</p>
               </div>
             </a>
           </div>
 
           {/* Dica */}
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-            <p className="text-xs text-gray-400">
+          <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 text-center">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               💡 Tenha em mãos seu CPF ou CNPJ para agilizar o atendimento
             </p>
           </div>
@@ -357,8 +357,8 @@ export default function LoginPage() {
   // Mostrar loading enquanto verifica autenticação
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-4 border-[#0d2857] border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        <div className="w-8 h-8 border-4 border-[#0d2857] dark:border-blue-400 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -515,15 +515,15 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 relative overflow-hidden">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900 relative overflow-hidden transition-colors duration-300">
         {/* Background decoration for right side */}
         <div className="absolute inset-0 pointer-events-none">
           <div 
-            className="absolute -top-20 -right-20 w-64 h-64 bg-[#0d2857]/5 rounded-full blur-3xl"
+            className="absolute -top-20 -right-20 w-64 h-64 bg-[#0d2857]/5 dark:bg-blue-500/10 rounded-full blur-3xl"
             style={{ animation: 'pulse 6s ease-in-out infinite' }}
           />
           <div 
-            className="absolute -bottom-20 -left-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"
+            className="absolute -bottom-20 -left-20 w-64 h-64 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl"
             style={{ animation: 'pulse 7s ease-in-out infinite', animationDelay: '2s' }}
           />
         </div>
@@ -531,7 +531,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md relative z-10">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-10 animate-scale-in">
-            <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-lg p-1 animate-float-up">
+            <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-xl flex items-center justify-center shadow-lg dark:shadow-gray-900/50 p-1 animate-float-up">
               <Image
                 src="https://febraca.org.br/wp-content/uploads/2025/11/Logo-Febraca-2-1-1024x1024.png"
                 alt="FEBRACA Logo"
@@ -541,8 +541,8 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">FEBRACA</h1>
-              <p className="text-gray-500 text-xs">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">FEBRACA</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-xs">
                 Federação Brasileira da Causa Animal
               </p>
             </div>
@@ -551,13 +551,13 @@ export default function LoginPage() {
           {/* Welcome text com animação */}
           <div className="text-center mb-10">
             <h2 
-              className="text-3xl font-bold text-gray-800 mb-2 animate-slide-in-bottom"
+              className="text-3xl font-bold text-gray-800 dark:text-white mb-2 animate-slide-in-bottom"
               style={{ animationDelay: '0.1s', animationFillMode: 'backwards' }}
             >
               Acesso Exclusivo
             </h2>
             <p 
-              className="text-gray-500 animate-slide-in-bottom"
+              className="text-gray-500 dark:text-gray-400 animate-slide-in-bottom"
               style={{ animationDelay: '0.2s', animationFillMode: 'backwards' }}
             >
               Entre para acessar o único painel completo de ONGs do Brasil
@@ -568,7 +568,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error message */}
             {error && (
-              <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 animate-shake">
+              <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 animate-shake">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span className="text-sm font-medium">{error}</span>
                 <style jsx>{`
@@ -591,20 +591,20 @@ export default function LoginPage() {
             >
               <label
                 htmlFor="username"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
                 Usuário
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-[#0d2857]">
-                  <User className="h-5 w-5 text-gray-400 group-focus-within:text-[#0d2857] transition-colors" />
+                  <User className="h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-[#0d2857] dark:group-focus-within:text-blue-400 transition-colors" />
                 </div>
                 <input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 transition-all duration-300 hover:border-gray-300 focus:border-[#0d2857] focus:ring-4 focus:ring-[#0d2857]/10 focus:outline-none"
+                  className="block w-full pl-12 pr-4 py-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-600 focus:border-[#0d2857] dark:focus:border-blue-500 focus:ring-4 focus:ring-[#0d2857]/10 dark:focus:ring-blue-500/20 focus:outline-none"
                   placeholder="Digite seu usuário"
                   required
                 />
@@ -618,27 +618,27 @@ export default function LoginPage() {
             >
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
                 Senha
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-[#0d2857] transition-colors" />
+                  <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-[#0d2857] dark:group-focus-within:text-blue-400 transition-colors" />
                 </div>
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-12 pr-12 py-4 bg-white border-2 border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 transition-all duration-300 hover:border-gray-300 focus:border-[#0d2857] focus:ring-4 focus:ring-[#0d2857]/10 focus:outline-none"
+                  className="block w-full pl-12 pr-12 py-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-600 focus:border-[#0d2857] dark:focus:border-blue-500 focus:ring-4 focus:ring-[#0d2857]/10 dark:focus:ring-blue-500/20 focus:outline-none"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#0d2857] transition-colors"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-[#0d2857] dark:hover:text-blue-400 transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />
@@ -657,14 +657,14 @@ export default function LoginPage() {
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 rounded border-gray-300 text-[#0d2857] focus:ring-[#0d2857] transition-transform group-hover:scale-110"
+                  className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-[#0d2857] dark:text-blue-500 focus:ring-[#0d2857] dark:focus:ring-blue-500 bg-white dark:bg-gray-800 transition-transform group-hover:scale-110"
                 />
-                <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">Lembrar de mim</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Lembrar de mim</span>
               </label>
               <button
                 type="button"
                 onClick={() => setModalType('password')}
-                className="text-sm text-[#0d2857] hover:text-[#022873] font-medium transition-all hover:underline underline-offset-4"
+                className="text-sm text-[#0d2857] dark:text-blue-400 hover:text-[#022873] dark:hover:text-blue-300 font-medium transition-all hover:underline underline-offset-4"
               >
                 Esqueceu a senha?
               </button>
@@ -707,14 +707,14 @@ export default function LoginPage() {
 
           {/* Sign up link */}
           <p 
-            className="mt-8 text-center text-gray-500 animate-slide-in-bottom"
+            className="mt-8 text-center text-gray-500 dark:text-gray-400 animate-slide-in-bottom"
             style={{ animationDelay: '0.7s', animationFillMode: 'backwards' }}
           >
             Não tem uma conta?{" "}
             <button
               type="button"
               onClick={() => setModalType('access')}
-              className="text-[#0d2857] hover:text-[#022873] font-medium transition-all hover:underline underline-offset-4"
+              className="text-[#0d2857] dark:text-blue-400 hover:text-[#022873] dark:hover:text-blue-300 font-medium transition-all hover:underline underline-offset-4"
             >
               Solicite acesso
             </button>
@@ -725,7 +725,7 @@ export default function LoginPage() {
             className="mt-12 text-center animate-fade-in"
             style={{ animationDelay: '0.8s', animationFillMode: 'backwards' }}
           >
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               © 2026 FEBRACA. Todos os direitos reservados.
             </p>
           </div>

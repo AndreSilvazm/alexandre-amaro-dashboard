@@ -38,7 +38,7 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
   const whatsappMessage = encodeURIComponent(`Olá! Estou entrando em contato através do portal FEBRACA. Gostaria de saber mais sobre a ${ong.shortName || ong.name}.`);
 
   return (
-    <div className="relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all group">
+    <div className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg transition-all group">
       {/* Header with remove button */}
       <div className="bg-gradient-to-r from-[#0d2857] to-emerald-500 px-4 py-3 text-white">
         <button
@@ -57,17 +57,17 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
         {/* Location */}
         <div className="flex items-center gap-2 text-sm">
           <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
-          <span className="text-gray-700 font-medium">
+          <span className="text-gray-700 dark:text-gray-300 font-medium">
             {ong.city} • {ong.stateCode}
           </span>
         </div>
 
         {/* CNPJ */}
-        <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-          <span className="text-sm font-mono text-gray-700">{ong.cnpj}</span>
+        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-lg px-3 py-2">
+          <span className="text-sm font-mono text-gray-700 dark:text-gray-300">{ong.cnpj}</span>
           <button
             onClick={handleCopy}
-            className="p-1 hover:bg-gray-200 rounded transition-all"
+            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-all"
             title="Copiar CNPJ"
           >
             {copied ? (
@@ -82,9 +82,9 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
         <div className="flex items-start gap-2 text-sm">
           <Phone className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
           <div className="flex flex-col">
-            {ong.phone && <span className="text-gray-700">{ong.phone}</span>}
-            {ong.phone2 && <span className="text-gray-500">{ong.phone2}</span>}
-            {!ong.phone && !ong.phone2 && <span className="text-gray-400">Telefone não informado</span>}
+            {ong.phone && <span className="text-gray-700 dark:text-gray-300">{ong.phone}</span>}
+            {ong.phone2 && <span className="text-gray-500 dark:text-gray-400">{ong.phone2}</span>}
+            {!ong.phone && !ong.phone2 && <span className="text-gray-400 dark:text-gray-500">Telefone não informado</span>}
           </div>
         </div>
 
@@ -109,21 +109,21 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
         {/* Email - Mostrar endereço + Botão de ação */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
-            <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <span className="text-gray-600 truncate" title={ong.email || 'Não informado'}>
+            <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+            <span className="text-gray-600 dark:text-gray-300 truncate" title={ong.email || 'Não informado'}>
               {ong.email || 'Email não informado'}
             </span>
           </div>
           {ong.email ? (
             <a
               href={`mailto:${ong.email}?subject=Contato%20via%20FEBRACA&body=Ol%C3%A1!%20Estou%20entrando%20em%20contato%20atrav%C3%A9s%20do%20portal%20FEBRACA.`}
-              className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#0d2857] hover:bg-[#1e4080] text-white rounded-lg font-medium text-sm transition-all"
+              className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#0d2857] hover:bg-[#1e4080] dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-all"
             >
               <Mail className="w-5 h-5" />
               Enviar Email
             </a>
           ) : (
-            <div className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-100 text-gray-400 rounded-lg font-medium text-sm cursor-not-allowed">
+            <div className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 rounded-lg font-medium text-sm cursor-not-allowed">
               <Mail className="w-5 h-5" />
               Email não disponível
             </div>
@@ -133,21 +133,21 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
         {/* Address */}
         <div className="flex items-start gap-2 text-sm">
           <Home className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-          <span className="text-gray-700">
+          <span className="text-gray-700 dark:text-gray-300">
             {ong.address.toUpperCase()} {ong.neighborhood.toUpperCase()} — CEP: {ong.cep}
           </span>
         </div>
 
         {/* Socios */}
-        <div className="border-t border-gray-100 pt-3 mt-3">
+        <div className="border-t border-gray-100 dark:border-gray-700 pt-3 mt-3">
           <button
             onClick={() => setShowSocios(!showSocios)}
-            className="flex items-center justify-between w-full text-sm text-gray-600 hover:text-gray-800"
+            className="flex items-center justify-between w-full text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
           >
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4 text-gray-400" />
               <span className="font-medium">{ong.socios.length} sócio(s)</span>
-              <span className="text-[#0d2857] hover:underline">— ver lista</span>
+              <span className="text-[#0d2857] dark:text-blue-400 hover:underline">— ver lista</span>
             </span>
             {showSocios ? (
               <ChevronUp className="w-4 h-4" />
@@ -160,9 +160,9 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
             <div className="mt-2 pl-6 space-y-1">
               {ong.socios.map((socio, index) => (
                 <div key={index} className="text-sm">
-                  <span className="font-medium text-gray-800">{socio.nome}</span>
+                  <span className="font-medium text-gray-800 dark:text-gray-200">{socio.nome}</span>
                   {socio.cargo && (
-                    <span className="text-gray-500 ml-2">({socio.cargo})</span>
+                    <span className="text-gray-500 dark:text-gray-400 ml-2">({socio.cargo})</span>
                   )}
                 </div>
               ))}
@@ -177,12 +177,12 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
 export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: SelectedONGsProps) {
   if (selectedONGs.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-        <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center transition-colors duration-300">
+        <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
           <Users className="w-10 h-10 text-gray-400" />
         </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-2">Nenhuma ONG Selecionada</h3>
-        <p className="text-gray-500">
+        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Nenhuma ONG Selecionada</h3>
+        <p className="text-gray-500 dark:text-gray-400">
           Clique no mapa ou use os filtros para selecionar ONGs e adicionar ao relatório.
         </p>
       </div>
@@ -190,18 +190,18 @@ export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: Sel
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-colors duration-300">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+        <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#0d2857]"></span>
           ONGs Selecionadas
-          <span className="ml-2 px-3 py-1 bg-[#0d2857]/10 text-[#0d2857] text-sm font-semibold rounded-full">
+          <span className="ml-2 px-3 py-1 bg-[#0d2857]/10 dark:bg-blue-900/30 text-[#0d2857] dark:text-blue-400 text-sm font-semibold rounded-full">
             {selectedONGs.length}
           </span>
         </h3>
         <button
           onClick={onClearAll}
-          className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1"
+          className="text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors flex items-center gap-1"
         >
           <X className="w-4 h-4" />
           Limpar Seleção
@@ -215,30 +215,30 @@ export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: Sel
       </div>
 
       {/* Summary stats */}
-      <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="text-center p-4 bg-[#0d2857]/10 rounded-xl">
-          <p className="text-2xl font-bold text-[#0d2857]">
+      <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="text-center p-4 bg-[#0d2857]/10 dark:bg-blue-900/30 rounded-xl">
+          <p className="text-2xl font-bold text-[#0d2857] dark:text-blue-400">
             {selectedONGs.length}
           </p>
-          <p className="text-sm text-gray-600">ONGs Selecionadas</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">ONGs Selecionadas</p>
         </div>
-        <div className="text-center p-4 bg-amber-50 rounded-xl">
-          <p className="text-2xl font-bold text-amber-600">
+        <div className="text-center p-4 bg-amber-50 dark:bg-amber-900/30 rounded-xl">
+          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
             {selectedONGs.reduce((sum, ong) => sum + ong.socios.length, 0).toLocaleString()}
           </p>
-          <p className="text-sm text-gray-600">Total de Sócios</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Total de Sócios</p>
         </div>
-        <div className="text-center p-4 bg-blue-50 rounded-xl">
-          <p className="text-2xl font-bold text-blue-600">
+        <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-xl">
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
             {new Set(selectedONGs.map(o => o.city)).size}
           </p>
-          <p className="text-sm text-gray-600">Cidades</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Cidades</p>
         </div>
-        <div className="text-center p-4 bg-purple-50 rounded-xl">
-          <p className="text-2xl font-bold text-purple-600">
+        <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
+          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
             {new Set(selectedONGs.map(o => o.stateCode)).size}
           </p>
-          <p className="text-sm text-gray-600">Estados</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Estados</p>
         </div>
       </div>
     </div>

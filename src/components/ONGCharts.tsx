@@ -37,8 +37,8 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* ONGs by State Chart */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 card-hover">
-        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 card-hover transition-colors duration-300">
+        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#0d2857]"></span>
           ONGs por Estado
         </h3>
@@ -48,7 +48,7 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
               data={stateChartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" className="dark:opacity-20" />
               <XAxis 
                 dataKey="name" 
                 angle={-45} 
@@ -83,8 +83,8 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
       </div>
 
       {/* Top 10 Cities Chart */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 card-hover">
-        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 card-hover transition-colors duration-300">
+        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
           {cityChartTitle}
         </h3>
@@ -95,7 +95,7 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
               layout="vertical"
               margin={{ top: 20, right: 30, left: 100, bottom: 20 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontal={true} vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontal={true} vertical={false} className="dark:opacity-20" />
               <XAxis 
                 type="number"
                 tick={{ fontSize: 12, fill: '#6B7280' }}

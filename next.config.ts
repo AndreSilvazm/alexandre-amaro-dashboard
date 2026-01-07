@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
         hostname: 'febraca.org.br',
         pathname: '/wp-content/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'arcanimal.com.br',
+        pathname: '/assets/**',
+      },
     ],
   },
 };

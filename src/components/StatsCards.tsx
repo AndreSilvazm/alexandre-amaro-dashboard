@@ -61,44 +61,44 @@ export default function StatsCards({ ongsCount, citiesCount, selectedCount = 0, 
   
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-      <div className="bg-white rounded-2xl shadow-lg p-6 card-hover border-l-4 border-[#0d2857] group">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 card-hover border-l-4 border-[#0d2857] group transition-colors duration-300">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
               {hasSelection ? 'ONGs Selecionadas' : 'ONGs Exibidas'}
             </p>
-            <p className="text-3xl font-bold text-gray-800 tabular-nums">
+            <p className="text-3xl font-bold text-gray-800 dark:text-white tabular-nums">
               {animatedOngsCount.toLocaleString()}
             </p>
             {hasSelection && (
-              <p className="text-xs text-gray-400 mt-1">de {ongsCount.toLocaleString()} exibidas</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">de {ongsCount.toLocaleString()} exibidas</p>
             )}
           </div>
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${hasSelection ? 'bg-emerald-100' : 'bg-[#0d2857]/10'}`}>
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${hasSelection ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-[#0d2857]/10 dark:bg-blue-900/30'}`}>
             {hasSelection ? (
-              <CheckCircle className="w-7 h-7 text-emerald-600" />
+              <CheckCircle className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
             ) : (
-              <Building2 className="w-7 h-7 text-[#0d2857]" />
+              <Building2 className="w-7 h-7 text-[#0d2857] dark:text-blue-400" />
             )}
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg p-6 card-hover border-l-4 border-emerald-500 group">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 card-hover border-l-4 border-emerald-500 group transition-colors duration-300">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
               {hasSelection ? 'Cidades Selecionadas' : 'Cidades'}
             </p>
-            <p className="text-3xl font-bold text-gray-800 tabular-nums">
+            <p className="text-3xl font-bold text-gray-800 dark:text-white tabular-nums">
               {animatedCitiesCount.toLocaleString()}
             </p>
             {hasSelection && (
-              <p className="text-xs text-gray-400 mt-1">de {citiesCount} disponíveis</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">de {citiesCount} disponíveis</p>
             )}
           </div>
-          <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-            <MapPin className="w-7 h-7 text-emerald-600" />
+          <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+            <MapPin className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
           </div>
         </div>
       </div>

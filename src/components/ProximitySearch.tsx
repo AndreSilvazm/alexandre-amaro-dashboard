@@ -343,14 +343,14 @@ export default function ProximitySearch({ ongs, onSearchResult, onSelectONG }: P
   };
 
   return (
-    <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-2xl shadow-lg p-6 mb-6 border border-emerald-100">
-      <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+    <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 dark:from-emerald-900/20 dark:to-cyan-900/20 rounded-2xl shadow-lg p-6 mb-6 border border-emerald-100 dark:border-emerald-800 transition-colors duration-300">
+      <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
         <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
           <Navigation className="w-5 h-5 text-white" />
         </div>
         <div>
           <span>Buscar ONGs Próximas</span>
-          <p className="text-sm font-normal text-gray-500">
+          <p className="text-sm font-normal text-gray-500 dark:text-gray-400">
             Encontre as ONGs mais próximas de um endereço ou da sua localização
           </p>
         </div>
@@ -373,7 +373,7 @@ export default function ProximitySearch({ ongs, onSearchResult, onSelectONG }: P
               onKeyDown={handleKeyDown}
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
               placeholder="Digite um endereço, CEP ou cidade..."
-              className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+              className="w-full pl-10 pr-10 py-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all placeholder-gray-400 dark:placeholder-gray-500"
             />
             {isLoadingSuggestions && (
               <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500 animate-spin" />
@@ -383,7 +383,7 @@ export default function ProximitySearch({ ongs, onSearchResult, onSelectONG }: P
             {showSuggestions && suggestions.length > 0 && (
               <div 
                 ref={suggestionsRef}
-                className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden"
+                className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-xl z-50 overflow-hidden"
               >
                 {suggestions.map((suggestion, index) => (
                   <button
@@ -391,8 +391,8 @@ export default function ProximitySearch({ ongs, onSearchResult, onSelectONG }: P
                     onClick={() => handleSelectSuggestion(suggestion)}
                     className={`w-full px-4 py-3 text-left flex items-start gap-3 transition-colors ${
                       index === selectedSuggestionIndex 
-                        ? 'bg-emerald-50 text-emerald-700' 
-                        : 'hover:bg-gray-50 text-gray-700'
+                        ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' 
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
                     }`}
                   >
                     <MapPin className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
@@ -421,7 +421,7 @@ export default function ProximitySearch({ ongs, onSearchResult, onSelectONG }: P
           <button
             onClick={handleUseCurrentLocation}
             disabled={isUsingGPS}
-            className="px-6 py-3 bg-white border-2 border-[#0d2857] text-[#0d2857] rounded-xl font-medium hover:bg-[#0d2857]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="px-6 py-3 bg-white dark:bg-gray-800 border-2 border-[#0d2857] dark:border-blue-400 text-[#0d2857] dark:text-blue-400 rounded-xl font-medium hover:bg-[#0d2857] hover:text-white dark:hover:bg-blue-600 dark:hover:text-white dark:hover:border-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             title="Usar minha localização atual"
           >
             {isUsingGPS ? (

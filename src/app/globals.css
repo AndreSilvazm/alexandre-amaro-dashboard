@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable dark mode with class strategy */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -14,6 +17,11 @@
   --accent-amber-dark: #D97706;
   --accent-cyan: #0EA5E9;
   --accent-violet: #8B5CF6;
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #f3f4f6;
 }
 
 @theme inline {
@@ -52,6 +60,16 @@ body {
   height: 100%;
   width: 100%;
   border-radius: 12px;
+  z-index: 1 !important;
+}
+
+/* Garantir que controles e popups do mapa fiquem visíveis */
+.leaflet-control-container {
+  z-index: 10 !important;
+}
+
+.leaflet-popup {
+  z-index: 20 !important;
 }
 
 /* Animation keyframes */
