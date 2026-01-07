@@ -85,6 +85,7 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
                   padding: '12px 16px',
                 }}
                 labelStyle={{ fontWeight: 'bold', color: tooltipTextColor }}
+                itemStyle={{ color: tooltipTextColor }}
                 formatter={(value) => [`${value} ONGs`, 'Quantidade']}
               />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
@@ -132,6 +133,7 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
                   padding: '12px 16px',
                 }}
                 labelStyle={{ fontWeight: 'bold', color: tooltipTextColor }}
+                itemStyle={{ color: tooltipTextColor }}
                 formatter={(value) => [`${value} ONGs`, 'Quantidade']}
               />
               <Bar dataKey="value" radius={[0, 4, 4, 0]}>
