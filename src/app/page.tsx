@@ -211,17 +211,17 @@ function ContactModal({
       />
       
       {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
+      <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden animate-fade-in flex flex-col">
         {/* Header colorido */}
-        <div className="bg-gradient-to-r from-[#0d2857] to-emerald-500 px-6 py-8 text-white text-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-gradient-to-r from-[#0d2857] to-emerald-500 px-4 sm:px-6 py-5 sm:py-8 text-white text-center flex-shrink-0">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
             {isPasswordReset ? (
-              <HelpCircle className="w-8 h-8" />
+              <HelpCircle className="w-6 h-6 sm:w-8 sm:h-8" />
             ) : (
-              <UserPlus className="w-8 h-8" />
+              <UserPlus className="w-6 h-6 sm:w-8 sm:h-8" />
             )}
           </div>
-          <h3 className="text-2xl font-bold">
+          <h3 className="text-xl sm:text-2xl font-bold">
             {isPasswordReset ? 'Recuperar Senha' : 'Solicitar Acesso'}
           </h3>
           <p className="text-white/80 text-sm mt-2">
@@ -241,7 +241,7 @@ function ContactModal({
         </button>
 
         {/* Conteúdo */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl p-4 mb-6">
             <p className="text-amber-800 dark:text-amber-300 text-sm leading-relaxed">
               {isPasswordReset ? (
@@ -264,12 +264,12 @@ function ContactModal({
           </p>
 
           {/* Opções de contato */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <a
               href="mailto:contato@febraca.org.br?subject=Solicita%C3%A7%C3%A3o%20de%20Acesso%20ao%20Dashboard"
-              className="flex items-center gap-4 p-4 bg-[#0d2857] hover:bg-[#1e4080] text-white rounded-xl transition-all group"
+              className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-[#0d2857] hover:bg-[#1e4080] text-white rounded-xl transition-all group"
             >
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Mail className="w-6 h-6" />
               </div>
               <div>
@@ -282,9 +282,9 @@ function ContactModal({
               href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20o%20acesso%20ao%20Dashboard%20FEBRACA."
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-4 p-4 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all group"
+              className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all group"
             >
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <MessageCircle className="w-6 h-6" />
               </div>
               <div>
@@ -295,9 +295,9 @@ function ContactModal({
 
             <a
               href="tel:+551199999999"
-              className="flex items-center gap-4 p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl transition-all group"
+              className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl transition-all group"
             >
-              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 group-hover:bg-gray-300 dark:group-hover:bg-gray-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 dark:bg-gray-600 group-hover:bg-gray-300 dark:group-hover:bg-gray-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Phone className="w-6 h-6" />
               </div>
               <div>
@@ -373,26 +373,26 @@ export default function LoginPage() {
         {/* Animated background elements */}
         <div className="absolute inset-0">
           <div 
-            className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl"
+            className="absolute top-10 left-10 lg:top-16 lg:left-16 2xl:top-20 2xl:left-20 w-48 h-48 lg:w-60 lg:h-60 2xl:w-72 2xl:h-72 bg-white/10 rounded-full blur-3xl"
             style={{ animation: 'pulse 4s ease-in-out infinite' }}
           />
           <div
-            className="absolute bottom-20 right-20 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl"
+            className="absolute bottom-10 right-10 lg:bottom-16 lg:right-16 2xl:bottom-20 2xl:right-20 w-64 h-64 lg:w-80 lg:h-80 2xl:w-96 2xl:h-96 bg-emerald-500/20 rounded-full blur-3xl"
             style={{ animation: 'pulse 5s ease-in-out infinite', animationDelay: '1s' }}
           />
           <div
-            className="absolute top-1/2 left-1/3 w-48 h-48 bg-amber-400/10 rounded-full blur-2xl"
+            className="absolute top-1/2 left-1/3 w-32 h-32 lg:w-40 lg:h-40 2xl:w-48 2xl:h-48 bg-amber-400/10 rounded-full blur-2xl"
             style={{ animation: 'pulse 3s ease-in-out infinite', animationDelay: '0.5s' }}
           />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+        <div className="relative z-10 flex flex-col justify-center px-8 lg:px-10 2xl:px-16 py-6 lg:py-8 2xl:py-10 text-white overflow-y-auto max-h-screen">
           {/* Logo com animação de entrada */}
-          <div className="mb-12 animate-scale-in" style={{ animationDuration: '0.8s' }}>
-            <div className="flex items-center gap-4 mb-8">
+          <div className="mb-4 lg:mb-5 2xl:mb-10 animate-scale-in" style={{ animationDuration: '0.8s' }}>
+            <div className="flex items-center gap-3 lg:gap-3 2xl:gap-4 mb-3 lg:mb-4 2xl:mb-6">
               <div 
-                className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center shadow-2xl p-2"
+                className="w-14 h-14 lg:w-16 lg:h-16 2xl:w-24 2xl:h-24 bg-white rounded-xl lg:rounded-xl 2xl:rounded-2xl flex items-center justify-center shadow-2xl p-1.5 lg:p-1.5 2xl:p-2"
                 style={{ 
                   boxShadow: '0 0 40px rgba(255,255,255,0.3), 0 20px 60px rgba(0,0,0,0.3)' 
                 }}
@@ -408,14 +408,14 @@ export default function LoginPage() {
               </div>
               <div className="animate-slide-in-left" style={{ animationDelay: '0.3s', animationFillMode: 'backwards' }}>
                 <h1 
-                  className="text-4xl font-bold tracking-tight"
+                  className="text-2xl lg:text-2xl 2xl:text-4xl font-bold tracking-tight"
                   style={{ 
                     textShadow: '0 2px 20px rgba(0,0,0,0.3)' 
                   }}
                 >
                   FEBRACA
                 </h1>
-                <p className="text-white/80 text-sm">
+                <p className="text-white/80 text-xs lg:text-xs 2xl:text-sm">
                   Federação Brasileira da Causa Animal
                 </p>
               </div>
@@ -423,7 +423,7 @@ export default function LoginPage() {
           </div>
 
           <div className="animate-slide-in-left" style={{ animationDelay: '0.4s', animationFillMode: 'backwards' }}>
-            <h2 className="text-5xl font-bold mb-6 leading-tight">
+            <h2 className="text-2xl lg:text-3xl 2xl:text-5xl font-bold mb-3 lg:mb-4 2xl:mb-6 leading-tight">
               O Único Dashboard
               <br />
               <span 
@@ -443,7 +443,7 @@ export default function LoginPage() {
           </div>
 
           <p 
-            className="text-xl text-white/90 mb-12 max-w-md leading-relaxed animate-slide-in-left"
+            className="text-sm lg:text-base 2xl:text-xl text-white/90 mb-5 lg:mb-6 2xl:mb-10 max-w-md leading-relaxed animate-slide-in-left"
             style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}
           >
             A plataforma <strong>exclusiva</strong> que reúne todas as ONGs de proteção animal 
@@ -451,47 +451,47 @@ export default function LoginPage() {
           </p>
 
           {/* Features com animações escalonadas */}
-          <div className="space-y-6">
+          <div className="space-y-3 lg:space-y-4 2xl:space-y-6">
             <div
-              className="flex items-center gap-4 animate-slide-in-left group cursor-pointer"
+              className="flex items-center gap-3 lg:gap-3 2xl:gap-4 animate-slide-in-left group cursor-pointer"
               style={{ animationDelay: '0.6s', animationFillMode: 'backwards' }}
             >
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
-                <Heart className="w-6 h-6 group-hover:animate-pulse" />
+              <div className="w-9 h-9 lg:w-10 lg:h-10 2xl:w-12 2xl:h-12 bg-white/20 rounded-lg lg:rounded-lg 2xl:rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300 flex-shrink-0">
+                <Heart className="w-4 h-4 lg:w-5 lg:h-5 2xl:w-6 2xl:h-6 group-hover:animate-pulse" />
               </div>
               <div className="group-hover:translate-x-2 transition-transform duration-300">
-                <h3 className="font-semibold">100% das ONGs do Brasil</h3>
-                <p className="text-white/70 text-sm">
+                <h3 className="font-semibold text-sm lg:text-sm 2xl:text-base">100% das ONGs do Brasil</h3>
+                <p className="text-white/70 text-xs lg:text-xs 2xl:text-sm">
                   O mapeamento mais completo que existe
                 </p>
               </div>
             </div>
 
             <div
-              className="flex items-center gap-4 animate-slide-in-left group cursor-pointer"
+              className="flex items-center gap-3 lg:gap-3 2xl:gap-4 animate-slide-in-left group cursor-pointer"
               style={{ animationDelay: '0.7s', animationFillMode: 'backwards' }}
             >
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
-                <Shield className="w-6 h-6 group-hover:animate-pulse" />
+              <div className="w-9 h-9 lg:w-10 lg:h-10 2xl:w-12 2xl:h-12 bg-white/20 rounded-lg lg:rounded-lg 2xl:rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300 flex-shrink-0">
+                <Shield className="w-4 h-4 lg:w-5 lg:h-5 2xl:w-6 2xl:h-6 group-hover:animate-pulse" />
               </div>
               <div className="group-hover:translate-x-2 transition-transform duration-300">
-                <h3 className="font-semibold">Dados Exclusivos</h3>
-                <p className="text-white/70 text-sm">
+                <h3 className="font-semibold text-sm lg:text-sm 2xl:text-base">Dados Exclusivos</h3>
+                <p className="text-white/70 text-xs lg:text-xs 2xl:text-sm">
                   Informações que você não encontra em outro lugar
                 </p>
               </div>
             </div>
 
             <div
-              className="flex items-center gap-4 animate-slide-in-left group cursor-pointer"
+              className="flex items-center gap-3 lg:gap-3 2xl:gap-4 animate-slide-in-left group cursor-pointer"
               style={{ animationDelay: '0.8s', animationFillMode: 'backwards' }}
             >
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
-                <PawPrint className="w-6 h-6 group-hover:animate-bounce" />
+              <div className="w-9 h-9 lg:w-10 lg:h-10 2xl:w-12 2xl:h-12 bg-white/20 rounded-lg lg:rounded-lg 2xl:rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300 flex-shrink-0">
+                <PawPrint className="w-4 h-4 lg:w-5 lg:h-5 2xl:w-6 2xl:h-6 group-hover:animate-bounce" />
               </div>
               <div className="group-hover:translate-x-2 transition-transform duration-300">
-                <h3 className="font-semibold">Pioneiros na Causa</h3>
-                <p className="text-white/70 text-sm">
+                <h3 className="font-semibold text-sm lg:text-sm 2xl:text-base">Pioneiros na Causa</h3>
+                <p className="text-white/70 text-xs lg:text-xs 2xl:text-sm">
                   A primeira e única plataforma nacional
                 </p>
               </div>
@@ -501,16 +501,16 @@ export default function LoginPage() {
 
         {/* Decorative paw prints animados */}
         <div 
-          className="absolute bottom-10 left-10 opacity-10"
+          className="absolute bottom-6 left-6 lg:bottom-8 lg:left-8 2xl:bottom-10 2xl:left-10 opacity-10"
           style={{ animation: 'floatShape2 8s ease-in-out infinite' }}
         >
-          <PawPrint className="w-32 h-32" />
+          <PawPrint className="w-20 h-20 lg:w-24 lg:h-24 2xl:w-32 2xl:h-32" />
         </div>
         <div 
-          className="absolute top-10 right-10 opacity-10 rotate-45"
+          className="absolute top-6 right-6 lg:top-8 lg:right-8 2xl:top-10 2xl:right-10 opacity-10 rotate-45"
           style={{ animation: 'floatShape1 6s ease-in-out infinite' }}
         >
-          <PawPrint className="w-24 h-24" />
+          <PawPrint className="w-16 h-16 lg:w-20 lg:h-20 2xl:w-24 2xl:h-24" />
         </div>
       </div>
 
