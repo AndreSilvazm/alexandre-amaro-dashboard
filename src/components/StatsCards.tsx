@@ -65,7 +65,19 @@ export default function StatsCards({ ongsCount, citiesCount, selectedCount = 0, 
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-              {hasSelection ? 'ONGs Selecionadas' : 'ONGs Exibidas'}
+              {hasSelection ? (
+                'ONGs Selecionadas'
+              ) : (
+                <span className="flex flex-wrap items-center gap-2 text-gray-500 dark:text-gray-300">
+                  <span>ONGs Exibidas</span>
+                  <span className="text-[10px] uppercase tracking-wide bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 px-2 py-0.5 rounded-full font-semibold">
+                    Feature
+                  </span>
+                  <span className="text-xs text-emerald-600 dark:text-emerald-300 font-medium">
+                    Novas adicionadas: 84+
+                  </span>
+                </span>
+              )}
             </p>
             <p className="text-3xl font-bold text-gray-800 dark:text-white tabular-nums">
               {animatedOngsCount.toLocaleString()}

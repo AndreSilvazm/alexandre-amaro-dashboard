@@ -21,6 +21,49 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const SESSION_KEY = 'febraca_session';
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 dias em milissegundos
 
+function clearSessionCookie() {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.cookie = `${SESSION_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+}
+
+function decodeSessionCookie(): Session | null {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const cookieEntry = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${SESSION_KEY}=`));
+
+  if (!cookieEntry) {
+    return null;
+  }
+
+  const value = cookieEntry.substring(SESSION_KEY.length + 1);
+
+  try {
+    return JSON.parse(decodeURIComponent(value)) as Session;
+  } catch (error) {
+    console.error('Erro ao parsear cookie de sessão:', error);
+    clearSessionCookie();
+    return null;
+  }
+}
+
+function writeSessionCookie(session: Session) {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  const expires = new Date(session.expiresAt).toUTCString();
+  document.cookie = `${SESSION_KEY}=${encodeURIComponent(
+    JSON.stringify(session)
+  )}; expires=${expires}; path=/`;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Omit<User, 'password'> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,22 +72,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkSession = () => {
       try {
-        const sessionData = localStorage.getItem(SESSION_KEY);
-        
-        if (sessionData) {
-          const session: Session = JSON.parse(sessionData);
-          
-          // Verificar se a sessão não expirou
-          if (session.expiresAt > Date.now()) {
-            setUser(session.user);
-          } else {
-            // Sessão expirada, remover do localStorage
-            localStorage.removeItem(SESSION_KEY);
-          }
+        const session = decodeSessionCookie();
+
+        if (session && session.expiresAt > Date.now()) {
+          setUser(session.user);
+        } else if (session) {
+          clearSessionCookie();
         }
       } catch (error) {
         console.error('Erro ao verificar sessão:', error);
-        localStorage.removeItem(SESSION_KEY);
+        clearSessionCookie();
       } finally {
         setIsLoading(false);
       }
@@ -66,6 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       username: foundUser.username,
       name: foundUser.name,
       role: foundUser.role,
+      permissions: foundUser.permissions,
+      cargo: foundUser.cargo,
+      img_url: foundUser.img_url,
     };
 
     // Criar sessão com expiração de 7 dias
@@ -74,8 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       expiresAt: Date.now() + SESSION_DURATION,
     };
 
-    // Salvar no localStorage
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    // Salvar nos cookies para que o servidor consiga ler a sessão
+    writeSessionCookie(session);
     
     setUser(userWithoutPassword);
     
@@ -83,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem(SESSION_KEY);
+    clearSessionCookie();
     setUser(null);
   };
 

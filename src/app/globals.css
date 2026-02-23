@@ -399,6 +399,42 @@ body {
   box-shadow: 0 10px 20px rgba(13, 40, 87, 0.4);
 }
 
+@media print {
+  body {
+    background: #ffffff;
+    color: #111827;
+  }
+
+  header,
+  nav,
+  button,
+  .print-hide,
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-block {
+    display: block !important;
+  }
+
+  section,
+  article,
+  .rounded-2xl,
+  .rounded-3xl,
+  .rounded-\[28px\],
+  .bg-white,
+  .bg-white\/10,
+  .dark\:bg-gray-800 {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+}
+
 .btn-secondary {
   background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   transition: all 0.3s ease;

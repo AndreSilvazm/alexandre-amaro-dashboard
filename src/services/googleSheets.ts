@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 // URLs das planilhas do Google Sheets (exportadas como CSV)
 const URL_ONGS = "https://docs.google.com/spreadsheets/d/1YVvp_w_r51028aAITKqrWtQDI8p9aOs3GQDIojtm4J4/export?format=csv&gid=400372920";
 const URL_SOCIOS = "https://docs.google.com/spreadsheets/d/1gn4nwKL3mvzvRNozAoiBGO15M8MJA2YfaIcJhAS1WiY/export?format=csv&gid=1270428080";
+const URL_FORMS = "https://docs.google.com/spreadsheets/d/16M-DnozXl-9eEA3sxH_5xstGshBimEJ9nPz-IyiYI-E/export?format=csv&gid=939834754";
 
 // Interface para os dados brutos da planilha de ONGs
 export interface ONGRaw {
@@ -35,6 +36,86 @@ export interface SocioRaw {
 export interface Socio {
   nome: string;
   cargo: string;
+}
+
+type FormSubmissionRaw = Record<string, string | undefined>;
+
+const FORM_COLUMNS = {
+  id: "ID",
+  startTime: "Hora de início",
+  endTime: "Hora de conclusão",
+  lastModified: "Hora da última modificação",
+  cnpj: "Digite aqui o CNPJ da sua ONG para começarmos.\n\nExemplo: 164922763/0001-00",
+  fantasyName: "Qual o nome fantasia da sua ONG?",
+  legalName: "Qual a razão social social (se houver)?",
+  address: "Digite o endereço (Exemplo: Rua dos Ipes, 24)",
+  city: "A cidade sede é? (Exemplo: São José)",
+  state: "O Estado? (Exemplo: SP)\u00A0",
+  contactEmail: "Qual o melhor email para comunicação? (Exemplo: animalfeliz@gmail.com)",
+  phone: "Agora digite apenas os números do melhor telefone para contato (Exemplo: 41996543123)",
+  responsible: "Qual o nome completo do gestor ou pessoa responsável pela ONG?",
+  site: "Se tiverem um site, digite o endereço por favor. (Exemplo: www.animalfeliz.com.br)",
+  instagram: "Possuem Instagram? Pode digitar o endereço por favor? (Exemplo: animal_feliz)",
+  foundationYear: "Qual o ano de fundação da ONG? (Exemplo: 1992)",
+  animalsServed: "Quantos animais são atendidos atualmente pela ONG?",
+  cltEmployees: "Quantos colaboradores pagos a ONG possui atualmente em regime de CLT (com vinculo trabalhista e registro em carteira)?",
+  pjEmployees: "Quantos colaboradores pagos a ONG possui atualmente apenas com vínculo PJ (via prestação de serviços, e sem vínculos trabalhistas)?",
+  species: "Qual(is) espécie(s) de animal(is) a organização atende ou luta em prol (pensando no foco principal)?",
+  adoptionsPerMonth: "Qual a média de adoções de animais realizadas por mês:",
+  legalDepartment: "A sua organização possui um departamento jurídico?",
+  accountingDepartment: "A sua organização possui um departamento contábil?",
+  marketingDepartment: "A sua organização possui um departamento de comunicação/marketing?",
+  transparency: "A sua organização possui uma aba de transparência em domínio virtual público (site ou redes sociais), contendo relatórios financeiros, balanços contábeis, contratos e relatórios de atividades?",
+  collaborationTerm: "Possuem Termo de Colaboração, Convênio ou algum tipo de contrato prevendo repasse de recursos financeiros com a prefeitura local ou algum órgão público nesse momento?",
+  parliamentaryAmendments: "Já receberam emendas parlamentares?",
+  privatePartnerships: "Possuem parcerias com empresas privadas para captação de recursos atualmente?",
+  mainFundingSource: "Qual é a principal fonte de recursos da ONG? (Onde a organização mais consegue receita financeira)",
+  mainChallenge: "Qual a principal dificuldade da ONG atualmente? [Escolher apenas uma, sendo a mais prejudicial para o andamento das atividades]",
+  volunteers: "Quantos voluntários ativos existem atualmente na sua ONG?\n",
+  volunteerTerm: "Todos os seus voluntários assinam o Termo de Adesão ao Voluntário?",
+  workWithPublicPower: "A sua ONG atua em conjunto com o poder público para melhorar a efetivação das leis de proteção animal na cidade?\n",
+  improvements: "Resumidamente, o que você deseja ver de melhorias para as ONGs de proteção animal?\n",
+  congressMessage: "Se você quisesse que a FEBRACA levasse uma mensagem sua no Congresso Nacional, para todos os deputados ouvirem, qual seria?\n",
+  confirmation: "Você declara que todas as informações acima são verdadeiras?",
+} as const;
+
+export interface FormSubmission {
+  id: string;
+  startedAt: string;
+  finishedAt: string;
+  updatedAt: string;
+  cnpj: string;
+  fantasyName: string;
+  legalName: string;
+  address: string;
+  city: string;
+  state: string;
+  email: string;
+  phone: string;
+  responsible: string;
+  site: string;
+  instagram: string;
+  foundationYear: string;
+  animalsServed: string;
+  cltEmployees: string;
+  pjEmployees: string;
+  species: string;
+  adoptionsPerMonth: string;
+  legalDepartment: string;
+  accountingDepartment: string;
+  marketingDepartment: string;
+  transparency: string;
+  collaborationTerm: string;
+  parliamentaryAmendments: string;
+  privatePartnerships: string;
+  mainFundingSource: string;
+  mainChallenge: string;
+  volunteers: string;
+  volunteerTerm: string;
+  workWithPublicPower: string;
+  improvements: string;
+  congressMessage: string;
+  confirmation: string;
 }
 
 // Interface para ONG processada (pronta para uso nos componentes)
@@ -153,6 +234,61 @@ export async function fetchONGs(): Promise<ONGRaw[]> {
 // Função para buscar Sócios
 export async function fetchSocios(): Promise<SocioRaw[]> {
   return fetchCSV<SocioRaw>(URL_SOCIOS);
+}
+
+function getColumnValue(row: FormSubmissionRaw, columnKey: keyof typeof FORM_COLUMNS): string {
+  const rawValue = row[FORM_COLUMNS[columnKey]];
+  return typeof rawValue === 'string' ? rawValue.trim() : '';
+}
+
+export async function fetchFormSubmissions(): Promise<FormSubmission[]> {
+  const rows = await fetchCSV<FormSubmissionRaw>(URL_FORMS);
+
+  return rows
+    .filter((row) => getColumnValue(row, 'cnpj'))
+    .map((row, index) => {
+      const cnpjRaw = getColumnValue(row, 'cnpj');
+      const phoneInfo = formatPhone(null, getColumnValue(row, 'phone') || null);
+
+      return {
+        id: getColumnValue(row, 'id') || `submission-${index}`,
+        startedAt: getColumnValue(row, 'startTime'),
+        finishedAt: getColumnValue(row, 'endTime'),
+        updatedAt: getColumnValue(row, 'lastModified'),
+        cnpj: formatCNPJ(cnpjRaw),
+        fantasyName: getColumnValue(row, 'fantasyName'),
+        legalName: getColumnValue(row, 'legalName'),
+        address: getColumnValue(row, 'address'),
+        city: getColumnValue(row, 'city'),
+        state: getColumnValue(row, 'state'),
+        email: getColumnValue(row, 'contactEmail'),
+        phone: phoneInfo.display || getColumnValue(row, 'phone'),
+        responsible: getColumnValue(row, 'responsible'),
+        site: getColumnValue(row, 'site'),
+        instagram: getColumnValue(row, 'instagram'),
+        foundationYear: getColumnValue(row, 'foundationYear'),
+        animalsServed: getColumnValue(row, 'animalsServed'),
+        cltEmployees: getColumnValue(row, 'cltEmployees'),
+        pjEmployees: getColumnValue(row, 'pjEmployees'),
+        species: getColumnValue(row, 'species'),
+        adoptionsPerMonth: getColumnValue(row, 'adoptionsPerMonth'),
+        legalDepartment: getColumnValue(row, 'legalDepartment'),
+        accountingDepartment: getColumnValue(row, 'accountingDepartment'),
+        marketingDepartment: getColumnValue(row, 'marketingDepartment'),
+        transparency: getColumnValue(row, 'transparency'),
+        collaborationTerm: getColumnValue(row, 'collaborationTerm'),
+        parliamentaryAmendments: getColumnValue(row, 'parliamentaryAmendments'),
+        privatePartnerships: getColumnValue(row, 'privatePartnerships'),
+        mainFundingSource: getColumnValue(row, 'mainFundingSource'),
+        mainChallenge: getColumnValue(row, 'mainChallenge'),
+        volunteers: getColumnValue(row, 'volunteers'),
+        volunteerTerm: getColumnValue(row, 'volunteerTerm'),
+        workWithPublicPower: getColumnValue(row, 'workWithPublicPower'),
+        improvements: getColumnValue(row, 'improvements'),
+        congressMessage: getColumnValue(row, 'congressMessage'),
+        confirmation: getColumnValue(row, 'confirmation'),
+      };
+    });
 }
 
 // Função principal para buscar todos os dados e fazer o relacionamento
