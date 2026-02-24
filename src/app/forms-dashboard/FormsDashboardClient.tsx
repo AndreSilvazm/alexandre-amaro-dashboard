@@ -285,40 +285,36 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
 const LIST_PAGE_SIZE = 6;
 
 export default function FormsDashboardClient({ submissions, lastUpdate }: FormsDashboardClientProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedState, setSelectedState] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
 
   const handleExportPDF = useCallback(() => {
     if (typeof window === "undefined") return;
     window.print();
   }, []);
 
+  const availableStates = useMemo(() => {
+    const collator = new Intl.Collator("pt-BR");
+    const uniqueStates = new Set(
+      submissions
+        .map((submission) => submission.state?.trim())
+        .filter((state): state is string => Boolean(state))
+        .map((state) => state.toUpperCase()),
+    );
+    return [...uniqueStates].sort((a, b) => collator.compare(a, b));
+  }, [submissions]);
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+    setSelectedSubmissionId(null);
+  }, [selectedState]);
 
   const filteredSubmissions = useMemo(() => {
-    if (!searchTerm.trim()) return submissions;
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-
-    return submissions.filter((submission) => {
-      const haystack = [
-        submission.fantasyName,
-        submission.legalName,
-        submission.cnpj,
-        submission.city,
-        submission.state,
-        submission.responsible,
-        submission.mainChallenge,
-        submission.mainFundingSource,
-        submission.email,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(normalizedSearch);
-    });
-  }, [searchTerm, submissions]);
+    if (!selectedState || selectedState === "all") return submissions;
+    const normalizedState = selectedState.toLowerCase();
+    return submissions.filter((submission) => submission.state?.toLowerCase() === normalizedState);
+  }, [selectedState, submissions]);
 
   const totalPages = Math.max(1, Math.ceil(Math.max(filteredSubmissions.length, 1) / LIST_PAGE_SIZE));
 
@@ -332,6 +328,49 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
     const startIndex = (currentPage - 1) * LIST_PAGE_SIZE;
     return filteredSubmissions.slice(startIndex, startIndex + LIST_PAGE_SIZE);
   }, [currentPage, filteredSubmissions]);
+
+  const selectedSubmission = useMemo(() => {
+    if (!selectedSubmissionId) return null;
+    return filteredSubmissions.find((submission) => submission.id === selectedSubmissionId) || null;
+  }, [filteredSubmissions, selectedSubmissionId]);
+
+  useEffect(() => {
+    if (!selectedSubmissionId) return;
+    const stillInList = filteredSubmissions.some((submission) => submission.id === selectedSubmissionId);
+    if (!stillInList) {
+      setSelectedSubmissionId(null);
+    }
+  }, [filteredSubmissions, selectedSubmissionId]);
+
+  useEffect(() => {
+    if (!selectedSubmissionId) return;
+    if (typeof window === "undefined") return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedSubmissionId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedSubmissionId]);
+
+  useEffect(() => {
+    if (!selectedSubmissionId) return;
+    if (typeof document === "undefined") return;
+    const { body } = document;
+    if (!body) return;
+    const previousOverflow = body.style.overflow;
+    body.style.overflow = "hidden";
+    return () => {
+      body.style.overflow = previousOverflow;
+    };
+  }, [selectedSubmissionId]);
+
+  const handleSelectSubmission = useCallback((submissionId: string) => {
+    setSelectedSubmissionId((previous) => (previous === submissionId ? null : submissionId));
+  }, []);
 
   const pageRangeStart = filteredSubmissions.length === 0 ? 0 : (currentPage - 1) * LIST_PAGE_SIZE + 1;
   const pageRangeEnd = filteredSubmissions.length === 0
@@ -443,8 +482,11 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
     };
   }, [filteredSubmissions]);
 
-  const hasComparativeData = analytics.totalSubmissions > 1;
-  const singleSubmission = !hasComparativeData ? filteredSubmissions[0] : undefined;
+  const filterStatusText = selectedState === "all"
+    ? `${submissions.length} respostas totais coletadas`
+    : analytics.totalSubmissions > 0
+      ? `${analytics.totalSubmissions} resposta(s) em ${selectedState}`
+      : `Nenhuma resposta para ${selectedState}`;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -459,33 +501,27 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                 Inteligência viva das ONGs de proteção animal
               </h1>
               <p className="text-white/80 mt-3 max-w-2xl">
-                Explore todos os indicadores ou filtre por uma ONG específica para entender sua capacidade, demandas e impacto.
+                Explore os indicadores por estado e abra uma ONG específica na lista para visualizar os gráficos individuais completos.
               </p>
             </div>
             <div className="w-full max-w-sm bg-white/10 backdrop-blur rounded-2xl border border-white/30 p-4">
-              <label className="text-xs uppercase tracking-widest text-white/70">Pesquisar ONG, cidade, CNPJ ou responsável</label>
-              <div className="mt-2 flex items-center gap-2">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  className="flex-1 bg-white text-[#0d2857] font-semibold rounded-xl px-3 py-2 focus:outline-none"
-                  placeholder="Ex.: Amor Animal, 0001-00, Curitiba"
-                />
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchTerm("")}
-                    className="text-xs font-semibold text-white/80 hover:text-white"
-                  >
-                    Limpar
-                  </button>
-                )}
+              <label className="text-xs uppercase tracking-widest text-white/70">Filtrar por estado</label>
+              <div className="mt-2">
+                <select
+                  value={selectedState}
+                  onChange={(event) => setSelectedState(event.target.value)}
+                  className="w-full bg-white text-[#0d2857] font-semibold rounded-xl px-3 py-2 focus:outline-none"
+                >
+                  <option value="all">Todos os estados</option>
+                  {availableStates.map((state) => (
+                    <option key={state} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </select>
               </div>
               <p className="text-xs text-white/70 mt-2">
-                {searchTerm
-                  ? `${analytics.totalSubmissions} resultado(s) filtrado(s) de ${submissions.length}`
-                  : `${submissions.length} respostas totais coletadas`}
+                {filterStatusText}
               </p>
               <button
                 type="button"
@@ -501,7 +537,15 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {analytics.totalSubmissions === 0 && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm">
+            Nenhuma ONG corresponde ao estado selecionado. Escolha "Todos os estados" para visualizar novamente todos os gráficos.
+          </div>
+        )}
+
+        {analytics.totalSubmissions > 0 && (
+          <>
+            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
             {
               label: "Total de formulários",
@@ -536,19 +580,6 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
             </div>
           ))}
         </section>
-
-        {analytics.totalSubmissions === 0 && (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm">
-            Nenhuma ONG corresponde ao filtro. Limpe a busca para visualizar novamente todos os gráficos.
-          </div>
-        )}
-
-        {!hasComparativeData && singleSubmission && (
-          <SingleSubmissionView submission={singleSubmission} />
-        )}
-
-        {hasComparativeData && (
-          <>
             <section className="grid gap-4 lg:grid-cols-3 print-page-break">
               <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
                 <header className="flex items-center justify-between mb-4">
@@ -787,107 +818,124 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
         <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
           <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Lista detalhada</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Lista de ONGs</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Todas as respostas com contato, estrutura e demandas específicas
+                Role até aqui para navegar pelos cadastros e clique em uma linha para abrir o modal com os gráficos individuais.
               </p>
             </div>
             <span className="text-sm text-gray-400 dark:text-gray-500">
-              {analytics.totalSubmissions} registro(s)
+              {filteredSubmissions.length} registro(s)
             </span>
           </div>
 
           <div className="space-y-4">
-            {paginatedSubmissions.map((submission) => (
-              <article
-                key={submission.id}
-                className="border border-gray-100 dark:border-gray-700 rounded-2xl p-4 hover:border-emerald-200/70 dark:hover:border-emerald-600/50 transition-colors"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {submission.fantasyName || submission.legalName || "Organização sem nome"}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Resp.: {submission.responsible || "Não informado"}
-                    </p>
-                  </div>
-                  <div className="text-right text-sm text-gray-500 dark:text-gray-400">
-                    <p>{submission.city || "Cidade não informada"}{submission.state ? ` - ${submission.state}` : ""}</p>
-                    <p>{formatDisplayDate(submission.finishedAt || submission.startedAt) || "Data não informada"}</p>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-3 text-sm text-gray-700 dark:text-gray-200">
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400">Contato</p>
-                    <p>{submission.email || "Email não informado"}</p>
-                    <p>{submission.phone || "Telefone não informado"}</p>
-                    {submission.site && (
-                      <p className="text-xs text-emerald-600 dark:text-emerald-300 truncate">{submission.site}</p>
-                    )}
-                    {submission.instagram && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">@{submission.instagram}</p>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400">Identidade</p>
-                    <p className="font-mono text-xs">{submission.cnpj || "CNPJ não informado"}</p>
-                    <p>{submission.foundationYear ? `Fundada em ${submission.foundationYear}` : "Ano não informado"}</p>
-                    <p>{submission.animalsServed || "Animais não informados"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400">Estrutura</p>
-                    <p>CLT: {submission.cltEmployees || "—"}</p>
-                    <p>PJ: {submission.pjEmployees || "—"}</p>
-                    <div className="mt-2 flex flex-wrap gap-1 text-xs">
-                      {[{ label: "Jurídico", value: submission.legalDepartment }, { label: "Contábil", value: submission.accountingDepartment }, { label: "Comunicação", value: submission.marketingDepartment }].map(({ label, value }) => (
-                        <span
-                          key={`${submission.id}-${label}`}
-                          className={`px-2 py-0.5 rounded-full border ${normalizeAnswer(value).includes("sim")
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:border-emerald-700"
-                            : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900/40 dark:text-gray-300 dark:border-gray-700"}`}
-                        >
-                          {label}
-                        </span>
-                      ))}
+            {paginatedSubmissions.map((submission) => {
+              const organizationName = submission.fantasyName || submission.legalName || "Organização sem nome";
+              const isSelected = submission.id === selectedSubmissionId;
+              return (
+                <article
+                  key={submission.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleSelectSubmission(submission.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handleSelectSubmission(submission.id);
+                    }
+                  }}
+                  className={`border border-gray-100 dark:border-gray-700 rounded-2xl p-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d2857] dark:focus-visible:ring-emerald-400 ${isSelected
+                    ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-500/60 dark:bg-emerald-900/20"
+                    : "hover:border-emerald-200/70 dark:hover:border-emerald-600/50"}`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{organizationName}</p>
+                      <p className="text-xs font-mono text-gray-500 dark:text-gray-400">CNPJ: {submission.cnpj || "Não informado"}</p>
+                    </div>
+                    <div className="text-right text-sm text-gray-500 dark:text-gray-400">
+                      <p>
+                        {submission.city || "Cidade não informada"}
+                        {submission.state ? ` - ${submission.state}` : ""}
+                      </p>
+                      <p>{formatDisplayDate(submission.finishedAt || submission.startedAt) || "Data não informada"}</p>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-4 grid gap-4 md:grid-cols-2 text-sm text-gray-700 dark:text-gray-200">
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400">Recursos & Transparência</p>
-                    <p>Fonte principal: {submission.mainFundingSource || "Não informado"}</p>
-                    <p>Transparência: {submission.transparency || "Não informado"}</p>
-                    <p>Termos públicos: {submission.collaborationTerm || "Não informado"}</p>
-                    <p>Parcerias privadas: {submission.privatePartnerships || "Não informado"}</p>
+                  <div className="mt-4 grid gap-4 md:grid-cols-3 text-sm text-gray-700 dark:text-gray-200">
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-gray-400">Canais institucionais</p>
+                      <p>{submission.email || "Email não informado"}</p>
+                      {submission.site && (
+                        <p className="text-xs text-emerald-600 dark:text-emerald-300 truncate">{submission.site}</p>
+                      )}
+                      {submission.instagram && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">@{submission.instagram}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-gray-400">Identidade</p>
+                      <p>{submission.foundationYear ? `Fundada em ${submission.foundationYear}` : "Ano não informado"}</p>
+                      <p>{submission.animalsServed || "Animais não informados"}</p>
+                      <p>{submission.species || "Espécies não informadas"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-gray-400">Estrutura</p>
+                      <p>CLT: {submission.cltEmployees || "—"}</p>
+                      <p>PJ: {submission.pjEmployees || "—"}</p>
+                      <div className="mt-2 flex flex-wrap gap-1 text-xs">
+                        {[{ label: "Jurídico", value: submission.legalDepartment }, { label: "Contábil", value: submission.accountingDepartment }, { label: "Comunicação", value: submission.marketingDepartment }].map(({ label, value }) => (
+                          <span
+                            key={`${submission.id}-${label}`}
+                            className={`${normalizeAnswer(value).includes("sim")
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:border-emerald-700"
+                              : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900/40 dark:text-gray-300 dark:border-gray-700"} px-2 py-0.5 rounded-full border`}
+                          >
+                            {label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400">Voluntariado & demandas</p>
-                    <p>Voluntários ativos: {submission.volunteers || "Não informado"}</p>
-                    <p>Termo assinado: {submission.volunteerTerm || "Não informado"}</p>
-                    <p>Adoções/mês: {submission.adoptionsPerMonth || "Não informado"}</p>
-                    <p>Maior desafio: {submission.mainChallenge || "Não informado"}</p>
-                  </div>
-                </div>
 
-                <div className="mt-4 grid gap-4 lg:grid-cols-2 text-sm text-gray-700 dark:text-gray-200">
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400">Melhorias desejadas</p>
-                    <p className="mt-1">{submission.improvements || "Não informado"}</p>
+                  <div className="mt-4 grid gap-4 md:grid-cols-2 text-sm text-gray-700 dark:text-gray-200">
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-gray-400">Recursos & Transparência</p>
+                      <p>Fonte principal: {submission.mainFundingSource || "Não informado"}</p>
+                      <p>Transparência: {submission.transparency || "Não informado"}</p>
+                      <p>Termos públicos: {submission.collaborationTerm || "Não informado"}</p>
+                      <p>Parcerias privadas: {submission.privatePartnerships || "Não informado"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-gray-400">Voluntariado & demandas</p>
+                      <p>Voluntários ativos: {submission.volunteers || "Não informado"}</p>
+                      <p>Termo assinado: {submission.volunteerTerm || "Não informado"}</p>
+                      <p>Adoções/mês: {submission.adoptionsPerMonth || "Não informado"}</p>
+                      <p>Maior desafio: {submission.mainChallenge || "Não informado"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-widest text-gray-400">Mensagem ao Congresso</p>
-                    <p className="mt-1">{submission.congressMessage || "Não informado"}</p>
+
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2 text-sm text-gray-700 dark:text-gray-200">
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-gray-400">Melhorias desejadas</p>
+                      <p className="mt-1">{submission.improvements || "Não informado"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-gray-400">Mensagem ao Congresso</p>
+                      <p className="mt-1">{submission.congressMessage || "Não informado"}</p>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+
+                  <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                    Clique para abrir o modal e analisar os gráficos completos desta ONG.
+                  </p>
+                </article>
+              );
+            })}
 
             {filteredSubmissions.length === 0 && (
               <p className="py-6 text-center text-gray-500 dark:text-gray-400">
-                Nenhuma resposta encontrada para o filtro informado.
+                Nenhuma resposta encontrada para o estado selecionado.
               </p>
             )}
           </div>
@@ -921,7 +969,42 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
             </div>
           )}
         </section>
+
       </main>
+
+      {selectedSubmission && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm"
+            onClick={() => setSelectedSubmissionId(null)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="selected-submission-title"
+            className="relative z-10 w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl"
+          >
+            <div className="sticky top-0 flex items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/95 dark:bg-gray-900/95 px-6 py-4 backdrop-blur">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400">Visão individual</p>
+                <h2 id="selected-submission-title" className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {selectedSubmission.fantasyName || selectedSubmission.legalName || "Organização sem nome"}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSubmissionId(null)}
+                className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+            <div className="p-6">
+              <SingleSubmissionView submission={selectedSubmission} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
