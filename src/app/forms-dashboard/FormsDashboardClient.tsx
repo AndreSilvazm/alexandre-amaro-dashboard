@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { stateFlags } from "@/data/stateFlags";
 import Header from "@/components/Header";
 import PieChart from "@/components/PieChart";
@@ -51,6 +51,10 @@ function resolveStateFlag(state?: string) {
   }
 
   return undefined;
+}
+
+function getSubmissionStateCode(submission: FormSubmission) {
+  return resolveStateFlag(submission.state)?.code || submission.state?.trim().toUpperCase();
 }
 
 function formatDisplayDate(value?: string) {
@@ -182,6 +186,33 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
   const pjEmployees = parseNumericValue(submission.pjEmployees);
   const staffCount = cltEmployees + pjEmployees;
   const stateFlagInfo = resolveStateFlag(submission.state);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const organizationTitle = submission.fantasyName || submission.legalName || "Organização sem nome";
+
+  const handlePrintIndividual = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const section = sectionRef.current;
+    if (!section) return;
+    const printable = section.outerHTML;
+    const headClone = document.head.cloneNode(true) as HTMLHeadElement;
+    headClone.querySelectorAll("script").forEach((script) => script.remove());
+    const headContent = headClone.innerHTML;
+    const htmlClass = document.documentElement.getAttribute("class") || "";
+    const bodyClass = document.body.getAttribute("class") || "";
+
+    const printWindow = window.open("", "_blank", "width=1024,height=768");
+    if (!printWindow) return;
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html><html class="${htmlClass}"><head><title>${organizationTitle} – FEBRACA</title>${headContent}<style>@page{margin:16mm;}body{padding:24px;background:#fff;}</style></head><body class="${bodyClass}">${printable}</body></html>`);
+    printWindow.document.close();
+    printWindow.addEventListener("load", () => {
+      printWindow.focus();
+      printWindow.print();
+      setTimeout(() => {
+        printWindow.close();
+      }, 250);
+    });
+  }, [organizationTitle]);
 
   const structureChartData = [
     { label: "Voluntários", value: volunteerCount, color: "#10b981" },
@@ -279,32 +310,41 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
     : [];
 
   return (
-    <section className="space-y-6">
+    <section ref={sectionRef} className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
         <header className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Análise individual</p>
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {submission.fantasyName || submission.legalName || "Organização sem nome"}
+              {organizationTitle}
             </h2>
           </div>
-          <span className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            {stateFlagInfo?.url && (
-              <span className="inline-flex items-center justify-center w-8 h-5 rounded-md overflow-hidden border border-white/60 dark:border-white/10">
-                <img
-                  src={stateFlagInfo.url}
-                  alt={`Bandeira de ${stateFlagInfo.code}`}
-                  width={32}
-                  height={20}
-                  className="object-cover"
-                  loading="lazy"
-                />
-              </span>
-            )}
-            {submission.city || "Cidade não informada"}
-            {submission.state ? ` / ${submission.state}` : ""}
-          </span>
+          <div className="inline-flex flex-col items-end gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="inline-flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              {stateFlagInfo?.url && (
+                <span className="inline-flex items-center justify-center w-8 h-5 rounded-md overflow-hidden border border-white/60 dark:border-white/10">
+                  <img
+                    src={stateFlagInfo.url}
+                    alt={`Bandeira de ${stateFlagInfo.code}`}
+                    width={32}
+                    height={20}
+                    className="object-cover"
+                    loading="lazy"
+                  />
+                </span>
+              )}
+              {submission.city || "Cidade não informada"}
+              {submission.state ? ` / ${submission.state}` : ""}
+            </div>
+            <button
+              type="button"
+              onClick={handlePrintIndividual}
+              className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-xl border border-gray-200 text-gray-700 hover:border-[#0d2857] hover:text-[#0d2857] dark:border-gray-700 dark:text-gray-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+            >
+              Gerar PDF desta ONG
+            </button>
+          </div>
         </header>
 
         <div className="grid gap-4 md:grid-cols-3 text-sm text-gray-700 dark:text-gray-200">
@@ -530,16 +570,42 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
     window.print();
   }, []);
 
-  const availableStates = useMemo(() => {
+  const stateOptions = useMemo(() => {
     const collator = new Intl.Collator("pt-BR");
-    const uniqueStates = new Set(
-      submissions
-        .map((submission) => submission.state?.trim())
-        .filter((state): state is string => Boolean(state))
-        .map((state) => state.toUpperCase()),
-    );
-    return [...uniqueStates].sort((a, b) => collator.compare(a, b));
+    const optionMap = new Map<string, { code: string; label: string; name?: string }>();
+
+    submissions.forEach((submission) => {
+      const resolved = resolveStateFlag(submission.state);
+      if (resolved) {
+        optionMap.set(resolved.code, {
+          code: resolved.code,
+          label: `${resolved.code} • ${resolved.name}`,
+          name: resolved.name,
+        });
+        return;
+      }
+
+      const fallbackState = submission.state?.trim();
+      if (!fallbackState) return;
+      const code = fallbackState.toUpperCase();
+      if (!optionMap.has(code)) {
+        optionMap.set(code, {
+          code,
+          label: code,
+        });
+      }
+    });
+
+    return [...optionMap.values()].sort((a, b) => collator.compare(a.name ?? a.label, b.name ?? b.label));
   }, [submissions]);
+
+  const stateOptionMap = useMemo(() => {
+    const map = new Map<string, { code: string; label: string; name?: string }>();
+    stateOptions.forEach((option) => {
+      map.set(option.code, option);
+    });
+    return map;
+  }, [stateOptions]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -548,8 +614,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
 
   const filteredSubmissions = useMemo(() => {
     if (!selectedState || selectedState === "all") return submissions;
-    const normalizedState = selectedState.toLowerCase();
-    return submissions.filter((submission) => submission.state?.toLowerCase() === normalizedState);
+    return submissions.filter((submission) => getSubmissionStateCode(submission) === selectedState);
   }, [selectedState, submissions]);
 
   const totalPages = Math.max(1, Math.ceil(Math.max(filteredSubmissions.length, 1) / LIST_PAGE_SIZE));
@@ -616,7 +681,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
   const analytics = useMemo(() => {
     const totalSubmissions = filteredSubmissions.length;
     const representedStates = new Set(
-      filteredSubmissions.map((submission) => submission.state || "Não informado"),
+      filteredSubmissions.map((submission) => getSubmissionStateCode(submission) || "Não informado"),
     ).size;
 
     const transparencyCount = filteredSubmissions.filter((submission) =>
@@ -718,11 +783,15 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
     };
   }, [filteredSubmissions]);
 
+  const selectedStateLabel = selectedState === "all"
+    ? undefined
+    : stateOptionMap.get(selectedState)?.label || selectedState;
+
   const filterStatusText = selectedState === "all"
     ? `${submissions.length} respostas totais coletadas`
     : analytics.totalSubmissions > 0
-      ? `${analytics.totalSubmissions} resposta(s) em ${selectedState}`
-      : `Nenhuma resposta para ${selectedState}`;
+      ? `${analytics.totalSubmissions} resposta(s) em ${selectedStateLabel}`
+      : `Nenhuma resposta para ${selectedStateLabel}`;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -749,9 +818,9 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                   className="w-full bg-white text-[#0d2857] font-semibold rounded-xl px-3 py-2 focus:outline-none"
                 >
                   <option value="all">Todos os estados</option>
-                  {availableStates.map((state) => (
-                    <option key={state} value={state}>
-                      {state}
+                  {stateOptions.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.label}
                     </option>
                   ))}
                 </select>
