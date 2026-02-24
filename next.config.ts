@@ -15,6 +15,16 @@ const nextConfig: NextConfig = {
         hostname: 'arcanimal.com.br',
         pathname: '/assets/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'assets.codante.io',
+        pathname: '/codante-apis/bandeiras-dos-estados/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'flagcdn.com',
+        pathname: '/**',
+      },
     ],
   },
 };

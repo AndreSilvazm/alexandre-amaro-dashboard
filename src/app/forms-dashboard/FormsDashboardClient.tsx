@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { stateFlags } from "@/data/stateFlags";
 import Header from "@/components/Header";
 import PieChart from "@/components/PieChart";
 import BarChart from "@/components/BarChart";
@@ -15,6 +16,41 @@ interface DistributionEntry {
   label: string;
   count: number;
   percentage: number;
+}
+
+const STATE_FLAGS = stateFlags;
+
+function normalizeStateValue(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase();
+}
+
+const STATE_NAME_ALIASES = Object.values(STATE_FLAGS).reduce<Record<string, string>>((acc, info) => {
+  acc[normalizeStateValue(info.name)] = info.uf;
+  return acc;
+}, {});
+
+function resolveStateFlag(state?: string) {
+  if (!state) return undefined;
+  const trimmed = state.trim();
+  if (!trimmed) return undefined;
+  const upper = trimmed.toUpperCase();
+  if (STATE_FLAGS[upper]) {
+    const info = STATE_FLAGS[upper];
+    return { code: upper, url: info.flag_url_square, name: info.name };
+  }
+
+  const normalized = normalizeStateValue(trimmed);
+  const aliasCode = STATE_NAME_ALIASES[normalized];
+  if (aliasCode && STATE_FLAGS[aliasCode]) {
+    const info = STATE_FLAGS[aliasCode];
+    return { code: aliasCode, url: info.flag_url_square, name: info.name };
+  }
+
+  return undefined;
 }
 
 function formatDisplayDate(value?: string) {
@@ -112,11 +148,40 @@ function parseNumericValue(value?: string) {
   return Math.round(sum / numbers.length);
 }
 
+interface BinaryChartOptions {
+  positiveLabel: string;
+  negativeLabel: string;
+  positiveColor: string;
+  negativeColor: string;
+  positiveKeywords?: string[];
+}
+
+function buildBinaryPieData(answer: string | undefined, options: BinaryChartOptions) {
+  const normalized = normalizeAnswer(answer);
+  if (!normalized) return [];
+  const keywords = options.positiveKeywords?.map((keyword) => keyword.toLowerCase()) || ["sim"];
+  const isPositive = keywords.some((keyword) => normalized.includes(keyword));
+
+  return [
+    {
+      label: options.positiveLabel,
+      value: isPositive ? 1 : 0,
+      color: options.positiveColor,
+    },
+    {
+      label: options.negativeLabel,
+      value: isPositive ? 0 : 1,
+      color: options.negativeColor,
+    },
+  ];
+}
+
 function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
   const volunteerCount = parseNumericValue(submission.volunteers);
   const cltEmployees = parseNumericValue(submission.cltEmployees);
   const pjEmployees = parseNumericValue(submission.pjEmployees);
   const staffCount = cltEmployees + pjEmployees;
+  const stateFlagInfo = resolveStateFlag(submission.state);
 
   const structureChartData = [
     { label: "Voluntários", value: volunteerCount, color: "#10b981" },
@@ -150,6 +215,69 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
     },
   ];
 
+  const volunteerTermChartData = buildBinaryPieData(submission.volunteerTerm, {
+    positiveLabel: "Assinam termo",
+    negativeLabel: "Sem termo",
+    positiveColor: "#22c55e",
+    negativeColor: "#f87171",
+  });
+
+  const parliamentaryChartData = buildBinaryPieData(submission.parliamentaryAmendments, {
+    positiveLabel: "Já receberam",
+    negativeLabel: "Nunca receberam",
+    positiveColor: "#0ea5e9",
+    negativeColor: "#94a3b8",
+  });
+
+  const animalsServedValue = parseNumericValue(submission.animalsServed);
+  const animalsChartData = animalsServedValue || submission.animalsServed
+    ? [{
+        label: submission.animalsServed || "Capacidade declarada",
+        value: Math.max(animalsServedValue, 1),
+        helper: submission.animalsServed || undefined,
+        color: "#10b981",
+      }]
+    : [];
+
+  const foundationYear = Number(submission.foundationYear);
+  const currentYear = new Date().getFullYear();
+  const hasFoundationYear = Number.isFinite(foundationYear) && foundationYear > 1900 && foundationYear <= currentYear;
+  const yearsOfOperation = hasFoundationYear ? Math.max(currentYear - foundationYear, 0) : null;
+  const foundationChartData = yearsOfOperation !== null
+    ? [{
+        label: "Anos de atuação",
+        value: Math.max(yearsOfOperation, 1),
+        helper: `Desde ${foundationYear}`,
+        color: "#0ea5e9",
+      }]
+    : [];
+
+  const challengeChartData = submission.mainChallenge
+    ? [{
+        label: submission.mainChallenge,
+        value: 1,
+        helper: "Desafio prioritário declarado",
+        color: "#f97316",
+      }]
+    : [];
+
+  const speciesItems = submission.species
+    ? submission.species
+        .split(/[,;/]| e /i)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
+  const adoptionValue = parseNumericValue(submission.adoptionsPerMonth);
+  const adoptionChartData = submission.adoptionsPerMonth
+    ? [{
+        label: "Adoções por mês",
+        value: Math.max(adoptionValue, 0),
+        helper: submission.adoptionsPerMonth,
+        color: "#8b5cf6",
+      }]
+    : [];
+
   return (
     <section className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
@@ -162,6 +290,18 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
           </div>
           <span className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            {stateFlagInfo?.url && (
+              <span className="inline-flex items-center justify-center w-8 h-5 rounded-md overflow-hidden border border-white/60 dark:border-white/10">
+                <img
+                  src={stateFlagInfo.url}
+                  alt={`Bandeira de ${stateFlagInfo.code}`}
+                  width={32}
+                  height={20}
+                  className="object-cover"
+                  loading="lazy"
+                />
+              </span>
+            )}
             {submission.city || "Cidade não informada"}
             {submission.state ? ` / ${submission.state}` : ""}
           </span>
@@ -275,6 +415,102 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
               <p className="text-xs uppercase tracking-widest text-gray-400">Mensagem ao Congresso</p>
               <p>{submission.congressMessage || "Não informado"}</p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+          <header className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Termos de voluntariado</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Formalização de vínculos com voluntários</p>
+          </header>
+          <PieChart data={volunteerTermChartData} innerRadius={55} />
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+            Declaração: {submission.volunteerTerm || "Não informado"}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+          <header className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Emendas parlamentares</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Captação de recursos públicos recentes</p>
+          </header>
+          <PieChart data={parliamentaryChartData} innerRadius={55} />
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+            Declaração: {submission.parliamentaryAmendments || "Não informado"}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+          <header className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Animais atendidos</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Volume atual sob cuidado</p>
+          </header>
+          <BarChart
+            data={animalsChartData}
+            formatter={(value) => value.toLocaleString("pt-BR")}
+            emptyMessage="Sem informação sobre quantidade de animais."
+          />
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+            {submission.animalsServed || "Sem detalhes adicionais"}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+          <header className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tempo de fundação</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Histórico de atuação contínua</p>
+          </header>
+          <BarChart
+            data={foundationChartData}
+            formatter={(value) => (value === 1 ? "1 ano" : `${value} anos`)}
+            emptyMessage="Sem informação sobre ano de fundação."
+          />
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+          <header className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Maiores desafios</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Foco declarado para apoio</p>
+          </header>
+          <BarChart
+            data={challengeChartData}
+            formatter={() => "Prioridade"}
+            emptyMessage="Sem desafios declarados."
+          />
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+        <header className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Perfil dos atendimentos</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Espécies foco e ritmo de adoções</p>
+        </header>
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-gray-400">Espécies atendidas</p>
+            {speciesItems.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {speciesItems.map((item) => (
+                  <span
+                    key={item}
+                    className="px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-sm text-gray-700 dark:text-gray-100"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Sem espécies informadas.</p>
+            )}
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-widest text-gray-400">Adoções mensais</p>
+            <BarChart
+              data={adoptionChartData}
+              formatter={(value) => value.toLocaleString("pt-BR")}
+              emptyMessage="Sem informação sobre adoções."
+            />
           </div>
         </div>
       </div>

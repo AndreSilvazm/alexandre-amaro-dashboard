@@ -71,12 +71,18 @@ export default function PieChart({ data, size = 180, innerRadius = 0, legendColu
       };
     });
 
+  const hasSingleSlice = slices.length === 1;
+
   return (
     <div className="flex flex-col gap-4">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {slices.map((slice, index) => (
-          <path key={`${slice.label}-${index}`} d={slice.path} fill={slice.color} opacity={0.9} />
-        ))}
+        {hasSingleSlice ? (
+          <circle cx={radius} cy={radius} r={radius} fill={slices[0].color} opacity={0.9} />
+        ) : (
+          slices.map((slice, index) => (
+            <path key={`${slice.label}-${index}`} d={slice.path} fill={slice.color} opacity={0.9} />
+          ))
+        )}
         {innerRadius > 0 && (
           <circle cx={radius} cy={radius} r={innerRadius} fill="white" className="dark:fill-gray-900" />
         )}
