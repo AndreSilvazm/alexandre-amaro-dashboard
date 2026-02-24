@@ -1149,9 +1149,9 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                       handleSelectSubmission(submission.id);
                     }
                   }}
-                  className={`border border-gray-100 dark:border-gray-700 rounded-2xl p-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d2857] dark:focus-visible:ring-emerald-400 ${isSelected
+                  className={`group cursor-pointer border border-gray-100 dark:border-gray-700 rounded-2xl p-4 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d2857] dark:focus-visible:ring-emerald-400 hover:-translate-y-0.5 hover:shadow-lg hover:border-emerald-200/80 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-500/10 ${isSelected
                     ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-500/60 dark:bg-emerald-900/20"
-                    : "hover:border-emerald-200/70 dark:hover:border-emerald-600/50"}`}
+                    : "bg-white dark:bg-gray-900/20"}`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
@@ -1231,8 +1231,12 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                     </div>
                   </div>
 
-                  <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                     Clique para abrir o modal e analisar os gráficos completos desta ONG.
+                    <span className="inline-flex items-center gap-1 text-[#0d2857] dark:text-emerald-300 font-semibold uppercase tracking-tight transition-transform duration-200 group-hover:translate-x-1">
+                      Ver detalhes
+                      <span aria-hidden className="text-base leading-none">↗</span>
+                    </span>
                   </p>
                 </article>
               );
