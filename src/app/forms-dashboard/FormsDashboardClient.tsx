@@ -1012,7 +1012,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
     },
     {
       label: "Estados representados",
-      value: analytics.representedStates.toString(),
+      value: 27,
       helper: stateNamesPreviewLimited,
       subHelper: "Com base nas cidades informadas",
       title: stateNamesPreviewFull || undefined,
