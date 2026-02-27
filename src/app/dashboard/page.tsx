@@ -15,6 +15,8 @@ import { RefreshCw, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useAuth } from '@/context/AuthContext';
 
+const normalizeDigits = (value?: string | null) => (value ?? '').replace(/\D/g, '');
+
 export default function DashboardPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
@@ -27,6 +29,7 @@ export default function DashboardPage() {
   const [selectedState, setSelectedState] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [cnpjSearch, setCnpjSearch] = useState('');
   const [selectedONGs, setSelectedONGs] = useState<ONG[]>([]);
   const [isFilterSelection, setIsFilterSelection] = useState(false); // true quando seleção é automática por filtro
   
@@ -90,20 +93,28 @@ export default function DashboardPage() {
     return [...citySet].sort();
   }, [selectedState, ongs]);
 
+  const matchesFilters = useCallback((ong: ONG) => {
+    const matchesState = !selectedState || ong.stateCode.toUpperCase() === selectedState.toUpperCase();
+    const matchesCity = !selectedCity || ong.city === selectedCity;
+    const normalizedNameSearch = searchTerm.trim().toLowerCase();
+    const matchesName =
+      !normalizedNameSearch ||
+      ong.name.toLowerCase().includes(normalizedNameSearch) ||
+      (ong.shortName && ong.shortName.toLowerCase().includes(normalizedNameSearch));
+    const normalizedCnpjSearch = normalizeDigits(cnpjSearch);
+    const ongIdDigits = normalizeDigits(ong.id);
+    const matchesCnpj =
+      !normalizedCnpjSearch ||
+      ongIdDigits.includes(normalizedCnpjSearch) ||
+      normalizeDigits(ong.cnpj).includes(normalizedCnpjSearch) ||
+      normalizeDigits(ong.cnpjBasico).includes(normalizedCnpjSearch);
+    return matchesState && matchesCity && matchesName && matchesCnpj;
+  }, [selectedState, selectedCity, searchTerm, cnpjSearch]);
+
   // Filter ONGs based on selected filters
   const filteredONGs = useMemo(() => {
-    const filtered = ongs.filter((ong) => {
-      const matchesState = !selectedState || ong.stateCode.toUpperCase() === selectedState.toUpperCase();
-      const matchesCity = !selectedCity || ong.city === selectedCity;
-      const matchesSearch =
-        !searchTerm ||
-        ong.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (ong.shortName && ong.shortName.toLowerCase().includes(searchTerm.toLowerCase()));
-      return matchesState && matchesCity && matchesSearch;
-    });
-    
-    return filtered;
-  }, [selectedState, selectedCity, searchTerm, ongs]);
+    return ongs.filter(matchesFilters);
+  }, [ongs, matchesFilters]);
 
   // Get unique cities count from filtered ONGs
   const uniqueCities = useMemo(() => {
@@ -143,7 +154,7 @@ export default function DashboardPage() {
 
   // Selecionar automaticamente todas as ONGs filtradas quando mudar o filtro de estado, cidade ou busca por nome
   useEffect(() => {
-    const hasActiveFilter = selectedState || selectedCity || searchTerm;
+    const hasActiveFilter = selectedState || selectedCity || searchTerm || cnpjSearch;
     
     if (hasActiveFilter) {
       // Se há filtro ativo, seleciona todas as ONGs que correspondem ao filtro
@@ -154,18 +165,12 @@ export default function DashboardPage() {
       setSelectedONGs([]);
       setIsFilterSelection(false);
     }
-  }, [selectedState, selectedCity, searchTerm, filteredONGs]);
+  }, [selectedState, selectedCity, searchTerm, cnpjSearch, filteredONGs]);
 
   // Handlers
   const handleONGClick = (ong: ONG) => {
     // Só permite selecionar se a ONG corresponde ao filtro atual
-    const matchesState = !selectedState || ong.stateCode.toUpperCase() === selectedState.toUpperCase();
-    const matchesCity = !selectedCity || ong.city === selectedCity;
-    const matchesSearch = !searchTerm || 
-      ong.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (ong.shortName && ong.shortName.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    if (!matchesState || !matchesCity || !matchesSearch) {
+    if (!matchesFilters(ong)) {
       return;
     }
     
@@ -186,14 +191,7 @@ export default function DashboardPage() {
 
   const handleBoxSelect = (selectedOngs: ONG[]) => {
     // Filtra apenas ONGs que correspondem ao filtro atual
-    const validOngs = selectedOngs.filter(ong => {
-      const matchesState = !selectedState || ong.stateCode.toUpperCase() === selectedState.toUpperCase();
-      const matchesCity = !selectedCity || ong.city === selectedCity;
-      const matchesSearch = !searchTerm || 
-        ong.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (ong.shortName && ong.shortName.toLowerCase().includes(searchTerm.toLowerCase()));
-      return matchesState && matchesCity && matchesSearch;
-    });
+    const validOngs = selectedOngs.filter(matchesFilters);
     
     setIsFilterSelection(false); // Marca como seleção manual
     setSelectedONGs((prev) => {
@@ -207,6 +205,7 @@ export default function DashboardPage() {
     setSelectedState('');
     setSelectedCity('');
     setSearchTerm('');
+    setCnpjSearch('');
   };
 
   const handleClearSelection = () => {
@@ -365,6 +364,8 @@ export default function DashboardPage() {
           setSelectedCity={setSelectedCity}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
+          cnpjSearch={cnpjSearch}
+          setCnpjSearch={setCnpjSearch}
           cities={cities}
           onClearFilters={handleClearFilters}
           onClearSelection={handleClearSelection}

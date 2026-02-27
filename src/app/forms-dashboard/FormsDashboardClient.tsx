@@ -20,6 +20,66 @@ interface DistributionEntry {
 
 const STATE_FLAGS = stateFlags;
 
+const STATE_CUSTOM_ALIASES: Record<string, string> = {
+  // Correções manuais para erros comuns de digitação
+  mhs: "MA", // Maranhão
+  mh: "MA", // Maranhão
+  riograndedossul: "RS",
+};
+
+function levenshteinDistance(a: string, b: string) {
+  const rows = a.length + 1;
+  const cols = b.length + 1;
+  const dp = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+  for (let i = 0; i < rows; i += 1) dp[i][0] = i;
+  for (let j = 0; j < cols; j += 1) dp[0][j] = j;
+
+  for (let i = 1; i < rows; i += 1) {
+    for (let j = 1; j < cols; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost,
+      );
+    }
+  }
+
+  return dp[rows - 1][cols - 1];
+}
+
+function findClosestStateName(normalizedName: string) {
+  let bestCode: string | undefined;
+  let bestDistance = Infinity;
+
+  Object.entries(STATE_NAME_ALIASES).forEach(([nameKey, code]) => {
+    const distance = levenshteinDistance(normalizedName, nameKey);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestCode = code;
+    }
+  });
+
+  return bestDistance <= 2 ? bestCode : undefined;
+}
+
+function findClosestStateCode(rawCode: string) {
+  const target = rawCode.toUpperCase();
+  let bestCode: string | undefined;
+  let bestDistance = Infinity;
+
+  Object.keys(STATE_FLAGS).forEach((code) => {
+    const distance = levenshteinDistance(target, code);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestCode = code;
+    }
+  });
+
+  return bestDistance <= 1 ? bestCode : undefined;
+}
+
 function normalizeStateValue(value: string) {
   return value
     .normalize("NFD")
@@ -37,10 +97,15 @@ function resolveStateFlag(state?: string) {
   if (!state) return undefined;
   const trimmed = state.trim();
   if (!trimmed) return undefined;
-  const upper = trimmed.toUpperCase();
-  if (STATE_FLAGS[upper]) {
-    const info = STATE_FLAGS[upper];
-    return { code: upper, url: info.flag_url_square, name: info.name };
+  const lettersOnly = trimmed.replace(/[^a-zA-Z]/g, "");
+  const normalizedCodeCandidate = lettersOnly.length > 0 && lettersOnly.length <= 3
+    ? lettersOnly.toUpperCase()
+    : "";
+
+  const directCode = normalizedCodeCandidate || trimmed.toUpperCase();
+  if (directCode && STATE_FLAGS[directCode]) {
+    const info = STATE_FLAGS[directCode];
+    return { code: directCode, url: info.flag_url_square, name: info.name };
   }
 
   const normalized = normalizeStateValue(trimmed);
@@ -50,11 +115,31 @@ function resolveStateFlag(state?: string) {
     return { code: aliasCode, url: info.flag_url_square, name: info.name };
   }
 
+  const customAliasCode = STATE_CUSTOM_ALIASES[normalized];
+  if (customAliasCode && STATE_FLAGS[customAliasCode]) {
+    const info = STATE_FLAGS[customAliasCode];
+    return { code: customAliasCode, url: info.flag_url_square, name: info.name };
+  }
+
+  if (normalizedCodeCandidate) {
+    const fuzzyCodeMatch = findClosestStateCode(normalizedCodeCandidate);
+    if (fuzzyCodeMatch && STATE_FLAGS[fuzzyCodeMatch]) {
+      const info = STATE_FLAGS[fuzzyCodeMatch];
+      return { code: fuzzyCodeMatch, url: info.flag_url_square, name: info.name };
+    }
+  }
+
+  const fuzzyNameMatch = findClosestStateName(normalized);
+  if (fuzzyNameMatch && STATE_FLAGS[fuzzyNameMatch]) {
+    const info = STATE_FLAGS[fuzzyNameMatch];
+    return { code: fuzzyNameMatch, url: info.flag_url_square, name: info.name };
+  }
+
   return undefined;
 }
 
 function getSubmissionStateCode(submission: FormSubmission) {
-  return resolveStateFlag(submission.state)?.code || submission.state?.trim().toUpperCase();
+  return resolveStateFlag(submission.state)?.code;
 }
 
 function formatDisplayDate(value?: string) {
@@ -146,38 +231,65 @@ function parseNumericValue(value?: string) {
   if (!matches) return 0;
   const numbers = matches
     .map((item) => Number(item))
-    .filter((item) => !Number.isNaN(item));
+    .filter((item) => Number.isFinite(item));
   if (numbers.length === 0) return 0;
+  if (numbers.length === 1) return numbers[0];
   const sum = numbers.reduce((acc, item) => acc + item, 0);
   return Math.round(sum / numbers.length);
 }
 
-interface BinaryChartOptions {
-  positiveLabel: string;
-  negativeLabel: string;
-  positiveColor: string;
-  negativeColor: string;
-  positiveKeywords?: string[];
+interface NumericRange {
+  min: number;
+  max: number;
+  hasRange: boolean;
 }
 
-function buildBinaryPieData(answer: string | undefined, options: BinaryChartOptions) {
-  const normalized = normalizeAnswer(answer);
-  if (!normalized) return [];
-  const keywords = options.positiveKeywords?.map((keyword) => keyword.toLowerCase()) || ["sim"];
-  const isPositive = keywords.some((keyword) => normalized.includes(keyword));
+function extractNumericRange(value?: string): NumericRange | undefined {
+  if (!value) return undefined;
+  const matches = value.replace(/\./g, "").match(/\d+/g);
+  if (!matches) return undefined;
+  const numbers = matches
+    .map((item) => Number(item))
+    .filter((item) => Number.isFinite(item));
+  if (numbers.length === 0) return undefined;
+  const min = Math.min(...numbers);
+  const max = Math.max(...numbers);
+  return {
+    min,
+    max,
+    hasRange: min !== max,
+  };
+}
 
-  return [
-    {
-      label: options.positiveLabel,
-      value: isPositive ? 1 : 0,
-      color: options.positiveColor,
-    },
-    {
-      label: options.negativeLabel,
-      value: isPositive ? 0 : 1,
-      color: options.negativeColor,
-    },
-  ];
+function formatRangeLabel(range?: NumericRange) {
+  if (!range) return undefined;
+  const minLabel = range.min.toLocaleString("pt-BR");
+  const maxLabel = range.max.toLocaleString("pt-BR");
+  if (!range.hasRange) return minLabel;
+  return `${minLabel} a ${maxLabel}`;
+}
+
+function sumNumericRanges(rangeA?: NumericRange, rangeB?: NumericRange): NumericRange | undefined {
+  if (!rangeA && !rangeB) return undefined;
+  const min = (rangeA?.min ?? 0) + (rangeB?.min ?? 0);
+  const max = (rangeA?.max ?? 0) + (rangeB?.max ?? 0);
+  return {
+    min,
+    max,
+    hasRange: (rangeA?.hasRange ?? false) || (rangeB?.hasRange ?? false) || min !== max,
+  };
+}
+
+function isRangeResponse(value?: string) {
+  if (!value) return false;
+  const normalized = value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (/([0-9]+)\s*(a|ate|até|-)\s*([0-9]+)/.test(normalized)) return true;
+  if (/(acima|abaixo|entre|mais de|menos de|ou mais|ou menos)/.test(normalized)) return true;
+  return normalized.includes("+");
 }
 
 function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
@@ -185,6 +297,39 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
   const cltEmployees = parseNumericValue(submission.cltEmployees);
   const pjEmployees = parseNumericValue(submission.pjEmployees);
   const staffCount = cltEmployees + pjEmployees;
+  const volunteerRangeInfo = extractNumericRange(submission.volunteers);
+  const volunteerRangeDetected = isRangeResponse(submission.volunteers);
+  const volunteerHasRange = Boolean(volunteerRangeDetected || volunteerRangeInfo?.hasRange);
+  const volunteerPrimaryText = volunteerHasRange
+    ? submission.volunteers?.trim() || formatRangeLabel(volunteerRangeInfo) || "Faixa declarada"
+    : formatRangeLabel(volunteerRangeInfo) || submission.volunteers?.trim() || "—";
+
+  const cltRangeInfo = extractNumericRange(submission.cltEmployees);
+  const pjRangeInfo = extractNumericRange(submission.pjEmployees);
+  const cltRangeDetected = isRangeResponse(submission.cltEmployees);
+  const pjRangeDetected = isRangeResponse(submission.pjEmployees);
+  const cltDisplayValue = cltRangeDetected
+    ? submission.cltEmployees?.trim() || formatRangeLabel(cltRangeInfo) || "—"
+    : formatRangeLabel(cltRangeInfo) || submission.cltEmployees?.trim() || "—";
+  const pjDisplayValue = pjRangeDetected
+    ? submission.pjEmployees?.trim() || formatRangeLabel(pjRangeInfo) || "—"
+    : formatRangeLabel(pjRangeInfo) || submission.pjEmployees?.trim() || "—";
+
+  const staffCombinedRange = sumNumericRanges(cltRangeInfo, pjRangeInfo);
+  const staffRangeDetected = Boolean(cltRangeDetected || pjRangeDetected || staffCombinedRange?.hasRange);
+  const staffTotalLabel = staffCombinedRange
+    ? formatRangeLabel(staffCombinedRange)
+    : staffCount > 0
+      ? staffCount.toLocaleString("pt-BR")
+      : undefined;
+  const staffPrimaryText = `Total: ${staffTotalLabel || "—"}`;
+  const staffDetails: string[] = [];
+  if (submission.cltEmployees) {
+    staffDetails.push(`CLT: ${cltDisplayValue}`);
+  }
+  if (submission.pjEmployees) {
+    staffDetails.push(`PJ: ${pjDisplayValue}`);
+  }
   const stateFlagInfo = resolveStateFlag(submission.state);
   const sectionRef = useRef<HTMLElement | null>(null);
   const organizationTitle = submission.fantasyName || submission.legalName || "Organização sem nome";
@@ -214,10 +359,57 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
     });
   }, [organizationTitle]);
 
-  const structureChartData = [
-    { label: "Voluntários", value: volunteerCount, color: "#10b981" },
-    { label: "Equipe fixa", value: staffCount, color: "#0ea5e9" },
-  ].filter((entry) => entry.value > 0);
+  const totalWorkforce = volunteerCount + staffCount;
+  const volunteerPercentage = totalWorkforce > 0 ? Math.round((volunteerCount / totalWorkforce) * 100) : 0;
+  const staffPercentage = totalWorkforce > 0 ? Math.max(100 - volunteerPercentage, 0) : 0;
+
+  const workforceCards = [{
+    label: "Voluntários",
+    percentage: volunteerPercentage,
+    accent: "from-emerald-500 to-emerald-400",
+    primaryText: volunteerHasRange
+      ? volunteerPrimaryText
+      : volunteerCount > 0
+        ? volunteerCount.toLocaleString("pt-BR")
+        : "—",
+    approximate: volunteerHasRange,
+    details: [] as string[],
+  }, {
+    label: "Equipe fixa",
+    percentage: staffPercentage,
+    accent: "from-sky-500 to-sky-400",
+    primaryText: staffPrimaryText,
+    approximate: staffRangeDetected,
+    details: staffDetails,
+  }];
+
+  const parliamentaryAnswerNormalized = normalizeAnswer(submission.parliamentaryAmendments);
+  const parliamentaryAnswerAscii = parliamentaryAnswerNormalized
+    ? parliamentaryAnswerNormalized.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    : "";
+  let hasParliamentaryFunding: boolean | undefined;
+  if (parliamentaryAnswerNormalized) {
+    if (parliamentaryAnswerAscii.includes("nao") || parliamentaryAnswerAscii.includes("nunca")) {
+      hasParliamentaryFunding = false;
+    } else if (parliamentaryAnswerAscii.includes("sim") || parliamentaryAnswerAscii.includes("ja")) {
+      hasParliamentaryFunding = true;
+    }
+  }
+  const parliamentaryStatusLabel = hasParliamentaryFunding === undefined
+    ? "Sem resposta"
+    : hasParliamentaryFunding
+      ? "Já receberam"
+      : "Nunca receberam";
+  const parliamentaryStatusDescription = hasParliamentaryFunding === undefined
+    ? "A organização não informou se já recebeu emendas parlamentares."
+    : hasParliamentaryFunding
+      ? "Há registro declarado de recebimento de recursos via emendas parlamentares."
+      : "A organização afirma que nunca recebeu recursos de emendas parlamentares.";
+  const parliamentaryStatusBadgeClass = hasParliamentaryFunding === undefined
+    ? "bg-gray-100 text-gray-600 dark:bg-gray-900/40 dark:text-gray-300"
+    : hasParliamentaryFunding
+      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200"
+      : "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200";
 
   const complianceChartData = [
     {
@@ -246,20 +438,6 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
     },
   ];
 
-  const volunteerTermChartData = buildBinaryPieData(submission.volunteerTerm, {
-    positiveLabel: "Assinam termo",
-    negativeLabel: "Sem termo",
-    positiveColor: "#22c55e",
-    negativeColor: "#f87171",
-  });
-
-  const parliamentaryChartData = buildBinaryPieData(submission.parliamentaryAmendments, {
-    positiveLabel: "Já receberam",
-    negativeLabel: "Nunca receberam",
-    positiveColor: "#0ea5e9",
-    negativeColor: "#94a3b8",
-  });
-
   const animalsServedValue = parseNumericValue(submission.animalsServed);
   const animalsChartData = animalsServedValue || submission.animalsServed
     ? [{
@@ -267,19 +445,6 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
         value: Math.max(animalsServedValue, 1),
         helper: submission.animalsServed || undefined,
         color: "#10b981",
-      }]
-    : [];
-
-  const foundationYear = Number(submission.foundationYear);
-  const currentYear = new Date().getFullYear();
-  const hasFoundationYear = Number.isFinite(foundationYear) && foundationYear > 1900 && foundationYear <= currentYear;
-  const yearsOfOperation = hasFoundationYear ? Math.max(currentYear - foundationYear, 0) : null;
-  const foundationChartData = yearsOfOperation !== null
-    ? [{
-        label: "Anos de atuação",
-        value: Math.max(yearsOfOperation, 1),
-        helper: `Desde ${foundationYear}`,
-        color: "#0ea5e9",
       }]
     : [];
 
@@ -375,8 +540,32 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Estrutura humana</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">Comparativo entre voluntários e equipe fixa</p>
           </header>
-          {structureChartData.length > 0 ? (
-            <PieChart data={structureChartData} innerRadius={55} />
+          {totalWorkforce > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {workforceCards.map(({ label, percentage, accent, primaryText, details, approximate }) => (
+                <div key={label} className="rounded-2xl border border-gray-100 dark:border-gray-700 p-4 bg-gray-50/60 dark:bg-gray-900/30">
+                  <p className="text-xs uppercase tracking-widest text-gray-400">{label}</p>
+                  <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{primaryText}</p>
+                  {details.length > 0 && (
+                    <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                      {details.map((detail) => (
+                        <p key={`${label}-${detail}`}>{detail}</p>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    {approximate ? "≈ " : ""}
+                    {percentage}% da força ativa
+                  </p>
+                  <div className="mt-3 h-2 rounded-full bg-white dark:bg-gray-800 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full bg-gradient-to-r ${accent}`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <p className="text-sm text-gray-500 dark:text-gray-400">Sem dados numéricos suficientes.</p>
           )}
@@ -459,23 +648,27 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-          <header className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Termos de voluntariado</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Formalização de vínculos com voluntários</p>
-          </header>
-          <PieChart data={volunteerTermChartData} innerRadius={55} />
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
-            Declaração: {submission.volunteerTerm || "Não informado"}
-          </p>
-        </div>
+      <div className="grid gap-6 lg:grid-cols-2">
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
           <header className="mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Emendas parlamentares</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">Captação de recursos públicos recentes</p>
           </header>
-          <PieChart data={parliamentaryChartData} innerRadius={55} />
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${parliamentaryStatusBadgeClass}`}>
+                {parliamentaryStatusLabel}
+              </span>
+              {hasParliamentaryFunding !== undefined && (
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {hasParliamentaryFunding ? "Captação confirmada" : "Nenhum registro"}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {parliamentaryStatusDescription}
+            </p>
+          </div>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
             Declaração: {submission.parliamentaryAmendments || "Não informado"}
           </p>
@@ -496,29 +689,16 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-          <header className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tempo de fundação</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Histórico de atuação contínua</p>
-          </header>
-          <BarChart
-            data={foundationChartData}
-            formatter={(value) => (value === 1 ? "1 ano" : `${value} anos`)}
-            emptyMessage="Sem informação sobre ano de fundação."
-          />
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-          <header className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Maiores desafios</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Foco declarado para apoio</p>
-          </header>
-          <BarChart
-            data={challengeChartData}
-            formatter={() => "Prioridade"}
-            emptyMessage="Sem desafios declarados."
-          />
-        </div>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
+        <header className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Maiores desafios</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Foco declarado para apoio</p>
+        </header>
+        <BarChart
+          data={challengeChartData}
+          formatter={() => "Prioridade"}
+          emptyMessage="Sem desafios declarados."
+        />
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
@@ -572,32 +752,14 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
 
   const stateOptions = useMemo(() => {
     const collator = new Intl.Collator("pt-BR");
-    const optionMap = new Map<string, { code: string; label: string; name?: string }>();
-
-    submissions.forEach((submission) => {
-      const resolved = resolveStateFlag(submission.state);
-      if (resolved) {
-        optionMap.set(resolved.code, {
-          code: resolved.code,
-          label: `${resolved.code} • ${resolved.name}`,
-          name: resolved.name,
-        });
-        return;
-      }
-
-      const fallbackState = submission.state?.trim();
-      if (!fallbackState) return;
-      const code = fallbackState.toUpperCase();
-      if (!optionMap.has(code)) {
-        optionMap.set(code, {
-          code,
-          label: code,
-        });
-      }
-    });
-
-    return [...optionMap.values()].sort((a, b) => collator.compare(a.name ?? a.label, b.name ?? b.label));
-  }, [submissions]);
+    return Object.entries(STATE_FLAGS)
+      .map(([code, info]) => ({
+        code,
+        label: `${code} • ${info.name}`,
+        name: info.name,
+      }))
+      .sort((a, b) => collator.compare(a.name ?? a.label, b.name ?? b.label));
+  }, []);
 
   const stateOptionMap = useMemo(() => {
     const map = new Map<string, { code: string; label: string; name?: string }>();
@@ -617,6 +779,17 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
     return submissions.filter((submission) => getSubmissionStateCode(submission) === selectedState);
   }, [selectedState, submissions]);
 
+  const alphabeticalSubmissions = useMemo(() => {
+    const collator = new Intl.Collator("pt-BR", { sensitivity: "base", ignorePunctuation: true });
+    return filteredSubmissions
+      .slice()
+      .sort((a, b) => {
+        const nameA = a.fantasyName || a.legalName || a.city || "";
+        const nameB = b.fantasyName || b.legalName || b.city || "";
+        return collator.compare(nameA, nameB);
+      });
+  }, [filteredSubmissions]);
+
   const totalPages = Math.max(1, Math.ceil(Math.max(filteredSubmissions.length, 1) / LIST_PAGE_SIZE));
 
   useEffect(() => {
@@ -627,8 +800,8 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
 
   const paginatedSubmissions = useMemo(() => {
     const startIndex = (currentPage - 1) * LIST_PAGE_SIZE;
-    return filteredSubmissions.slice(startIndex, startIndex + LIST_PAGE_SIZE);
-  }, [currentPage, filteredSubmissions]);
+    return alphabeticalSubmissions.slice(startIndex, startIndex + LIST_PAGE_SIZE);
+  }, [currentPage, alphabeticalSubmissions]);
 
   const selectedSubmission = useMemo(() => {
     if (!selectedSubmissionId) return null;
@@ -680,9 +853,39 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
 
   const analytics = useMemo(() => {
     const totalSubmissions = filteredSubmissions.length;
-    const representedStates = new Set(
-      filteredSubmissions.map((submission) => getSubmissionStateCode(submission) || "Não informado"),
-    ).size;
+
+    const representedStateCodesSet = new Set<string>();
+    let totalJobsGenerated = 0;
+    let animalsSum = 0;
+    let animalsRespondents = 0;
+
+    filteredSubmissions.forEach((submission) => {
+      const code = getSubmissionStateCode(submission);
+      if (code) {
+        representedStateCodesSet.add(code);
+      }
+
+      const clt = parseNumericValue(submission.cltEmployees);
+      const pj = parseNumericValue(submission.pjEmployees);
+      totalJobsGenerated += clt + pj;
+
+      const animalsValue = parseNumericValue(submission.animalsServed);
+      if (animalsValue > 0) {
+        animalsSum += animalsValue;
+        animalsRespondents += 1;
+      }
+    });
+
+    const representedStateCodes = [...representedStateCodesSet].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    const representedStateLabels = representedStateCodes.map((code) => {
+      const option = stateOptionMap.get(code);
+      if (option?.name) {
+        return `${option.code} • ${option.name}`;
+      }
+      return option?.label || code;
+    });
+    const representedStates = representedStateCodes.length;
+    const averageAnimalsServed = animalsRespondents > 0 ? Math.round(animalsSum / animalsRespondents) : 0;
 
     const transparencyCount = filteredSubmissions.filter((submission) =>
       normalizeAnswer(submission.transparency).startsWith("sim"),
@@ -759,15 +962,18 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
         return dateB - dateA;
       })
       .slice(0, 6);
-
     return {
       totalSubmissions,
       representedStates,
+      representedStateLabels,
       transparencyCount,
       collaborationCount,
       legalDeptCount,
       accountingDeptCount,
       marketingDeptCount,
+      totalJobsGenerated,
+      averageAnimalsServed,
+      animalsRespondents,
       fundingDistribution,
       challengeDistribution,
       speciesDistribution,
@@ -781,7 +987,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
       foundationDecades,
       recentSubmissions,
     };
-  }, [filteredSubmissions]);
+  }, [filteredSubmissions, stateOptionMap]);
 
   const selectedStateLabel = selectedState === "all"
     ? undefined
@@ -792,6 +998,54 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
     : analytics.totalSubmissions > 0
       ? `${analytics.totalSubmissions} resposta(s) em ${selectedStateLabel}`
       : `Nenhuma resposta para ${selectedStateLabel}`;
+
+  const stateNamesPreviewFull = analytics.representedStateLabels.join(", ");
+  const stateNamesPreviewLimited = analytics.representedStateLabels.length > 0
+    ? `${analytics.representedStateLabels.slice(0, 6).join(", ")}${analytics.representedStateLabels.length > 6 ? ` +${analytics.representedStateLabels.length - 6}` : ""}`
+    : "Sem estados informados";
+
+  const statsCardsData = [
+    {
+      label: "Total de formulários",
+      value: analytics.totalSubmissions.toLocaleString("pt-BR"),
+      helper: "Respostas completas",
+    },
+    {
+      label: "Estados representados",
+      value: analytics.representedStates.toString(),
+      helper: stateNamesPreviewLimited,
+      subHelper: "Com base nas cidades informadas",
+      title: stateNamesPreviewFull || undefined,
+    },
+    {
+      label: "ONGs com transparência",
+      value: analytics.transparencyCount.toString(),
+      helper: `${Math.round(
+        (analytics.transparencyCount / Math.max(analytics.totalSubmissions, 1)) * 100,
+      )}% da base`,
+    },
+    {
+      label: "Parcerias públicas",
+      value: analytics.collaborationCount.toString(),
+      helper: "Termos ou convênios ativos",
+    },
+    {
+      label: "Empregos gerados",
+      value: analytics.totalJobsGenerated > 0
+        ? analytics.totalJobsGenerated.toLocaleString("pt-BR")
+        : "—",
+      helper: analytics.totalJobsGenerated > 0 ? "CLT + PJ declarados" : "Sem dados suficientes",
+    },
+    {
+      label: "Média de animais abrigados",
+      value: analytics.averageAnimalsServed > 0
+        ? analytics.averageAnimalsServed.toLocaleString("pt-BR")
+        : "—",
+      helper: analytics.animalsRespondents > 0
+        ? `Base em ${analytics.animalsRespondents} ONG(s)`
+        : "Sem respostas suficientes",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -851,40 +1105,23 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
         {analytics.totalSubmissions > 0 && (
           <>
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            {
-              label: "Total de formulários",
-              value: analytics.totalSubmissions.toLocaleString("pt-BR"),
-              helper: "Respostas completas",
-            },
-            {
-              label: "Estados representados",
-              value: analytics.representedStates.toString(),
-              helper: "Com base nas cidades informadas",
-            },
-            {
-              label: "ONGs com transparência",
-              value: analytics.transparencyCount.toString(),
-              helper: `${Math.round(
-                (analytics.transparencyCount / Math.max(analytics.totalSubmissions, 1)) * 100,
-              )}% da base`,
-            },
-            {
-              label: "Parcerias públicas",
-              value: analytics.collaborationCount.toString(),
-              helper: "Termos ou convênios ativos",
-            },
-          ].map(({ label, value, helper }) => (
-            <div
-              key={label}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{helper}</p>
-            </div>
-          ))}
-        </section>
+              {statsCardsData.map(({ label, value, helper, subHelper, title }) => (
+                <div
+                  key={label}
+                  title={title}
+                  className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+                  {helper && (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{helper}</p>
+                  )}
+                  {subHelper && (
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{subHelper}</p>
+                  )}
+                </div>
+              ))}
+            </section>
             <section className="grid gap-4 lg:grid-cols-3 print-page-break">
               <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
                 <header className="flex items-center justify-between mb-4">
@@ -909,7 +1146,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Departamentos estruturados</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Governança interna declarada</p>
                 </header>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {[{
                     label: "Jurídico",
                     value: analytics.legalDeptCount,
@@ -919,14 +1156,31 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                   }, {
                     label: "Comunicação & Marketing",
                     value: analytics.marketingDeptCount,
-                  }].map(({ label, value }) => (
-                    <div key={label} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-300">{label}</span>
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold border bg-gray-50 dark:bg-gray-900/40 text-gray-700 dark:text-gray-200">
-                        {value} / {analytics.totalSubmissions || 1}
-                      </span>
-                    </div>
-                  ))}
+                  }].map(({ label, value }) => {
+                    const percentage = analytics.totalSubmissions
+                      ? Math.round((value / analytics.totalSubmissions) * 100)
+                      : 0;
+                    return (
+                      <div key={label}>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-300">{label}</span>
+                          <span className="text-xs font-semibold text-[#0d2857] dark:text-emerald-300">
+                            {percentage}%
+                          </span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-full bg-gray-100 dark:bg-gray-900/40 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+                            style={{ width: `${percentage}%` }}
+                            aria-label={`${percentage}% das organizações com ${label.toLowerCase()}`}
+                          />
+                        </div>
+                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                          {value} de {analytics.totalSubmissions || 0} organizações declararam este departamento.
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="mt-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-500/30 p-4 text-sm text-emerald-900 dark:text-emerald-200">
                   <p className="font-semibold">Insight rápido</p>
@@ -937,7 +1191,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
               </div>
             </section>
 
-            <section className="grid gap-4 lg:grid-cols-3">
+            <section className="grid gap-4 lg:grid-cols-2">
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
                 <header className="mb-4">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Voluntários ativos</h2>
@@ -951,22 +1205,6 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                   }))}
                   innerRadius={50}
                 />
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-                <header className="mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Termos de voluntariado</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Conformidade jurídica dos voluntários</p>
-                </header>
-                <PieChart
-                  data={[
-                    { label: "Assinam", value: analytics.volunteerTermCounts.yes, color: "#22c55e" },
-                    { label: "Não assinam", value: analytics.volunteerTermCounts.no, color: "#ef4444" },
-                  ]}
-                  innerRadius={55}
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
-                  Direcione mentorias para quem ainda não formaliza a atuação voluntária.
-                </p>
               </div>
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 space-y-6">
                 <div>
@@ -992,7 +1230,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
               </div>
             </section>
 
-            <section className="grid gap-4 xl:grid-cols-3 print-page-break">
+            <section className="grid gap-4 lg:grid-cols-2 print-page-break">
               <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
                 <header className="mb-4">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Top cidades e estados</h2>
@@ -1019,21 +1257,6 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                     helper: `${entry.percentage}% das respostas`,
                     color: "#10b981",
                   }))}
-                />
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
-                <header className="mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Décadas de fundação</h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Perfil histórico das ONGs</p>
-                </header>
-                <BarChart
-                  data={analytics.foundationDecades.map((entry) => ({
-                    label: entry.label,
-                    value: entry.count,
-                    helper: `${entry.percentage}% da base`,
-                    color: "#f43f5e",
-                  }))}
-                  emptyMessage="Nenhuma informação de ano declarada."
                 />
               </div>
             </section>
@@ -1137,6 +1360,11 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
             {paginatedSubmissions.map((submission) => {
               const organizationName = submission.fantasyName || submission.legalName || "Organização sem nome";
               const isSelected = submission.id === selectedSubmissionId;
+              const locationLabel = submission.city
+                ? submission.state
+                  ? `${submission.city} • ${submission.state}`
+                  : submission.city
+                : submission.state || "Local não informado";
               return (
                 <article
                   key={submission.id}
@@ -1156,78 +1384,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <p className="text-lg font-semibold text-gray-900 dark:text-white">{organizationName}</p>
-                      <p className="text-xs font-mono text-gray-500 dark:text-gray-400">CNPJ: {submission.cnpj || "Não informado"}</p>
-                    </div>
-                    <div className="text-right text-sm text-gray-500 dark:text-gray-400">
-                      <p>
-                        {submission.city || "Cidade não informada"}
-                        {submission.state ? ` - ${submission.state}` : ""}
-                      </p>
-                      <p>{formatDisplayDate(submission.finishedAt || submission.startedAt) || "Data não informada"}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-4 md:grid-cols-3 text-sm text-gray-700 dark:text-gray-200">
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-gray-400">Canais institucionais</p>
-                      <p>{submission.email || "Email não informado"}</p>
-                      {submission.site && (
-                        <p className="text-xs text-emerald-600 dark:text-emerald-300 truncate">{submission.site}</p>
-                      )}
-                      {submission.instagram && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">@{submission.instagram}</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-gray-400">Identidade</p>
-                      <p>{submission.foundationYear ? `Fundada em ${submission.foundationYear}` : "Ano não informado"}</p>
-                      <p>{submission.animalsServed || "Animais não informados"}</p>
-                      <p>{submission.species || "Espécies não informadas"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-gray-400">Estrutura</p>
-                      <p>CLT: {submission.cltEmployees || "—"}</p>
-                      <p>PJ: {submission.pjEmployees || "—"}</p>
-                      <div className="mt-2 flex flex-wrap gap-1 text-xs">
-                        {[{ label: "Jurídico", value: submission.legalDepartment }, { label: "Contábil", value: submission.accountingDepartment }, { label: "Comunicação", value: submission.marketingDepartment }].map(({ label, value }) => (
-                          <span
-                            key={`${submission.id}-${label}`}
-                            className={`${normalizeAnswer(value).includes("sim")
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:border-emerald-700"
-                              : "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-900/40 dark:text-gray-300 dark:border-gray-700"} px-2 py-0.5 rounded-full border`}
-                          >
-                            {label}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-4 md:grid-cols-2 text-sm text-gray-700 dark:text-gray-200">
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-gray-400">Recursos & Transparência</p>
-                      <p>Fonte principal: {submission.mainFundingSource || "Não informado"}</p>
-                      <p>Transparência: {submission.transparency || "Não informado"}</p>
-                      <p>Termos públicos: {submission.collaborationTerm || "Não informado"}</p>
-                      <p>Parcerias privadas: {submission.privatePartnerships || "Não informado"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-gray-400">Voluntariado & demandas</p>
-                      <p>Voluntários ativos: {submission.volunteers || "Não informado"}</p>
-                      <p>Termo assinado: {submission.volunteerTerm || "Não informado"}</p>
-                      <p>Adoções/mês: {submission.adoptionsPerMonth || "Não informado"}</p>
-                      <p>Maior desafio: {submission.mainChallenge || "Não informado"}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-4 lg:grid-cols-2 text-sm text-gray-700 dark:text-gray-200">
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-gray-400">Melhorias desejadas</p>
-                      <p className="mt-1">{submission.improvements || "Não informado"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs uppercase tracking-widest text-gray-400">Mensagem ao Congresso</p>
-                      <p className="mt-1">{submission.congressMessage || "Não informado"}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{locationLabel}</p>
                     </div>
                   </div>
 
@@ -1284,14 +1441,14 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
       {selectedSubmission && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm modal-overlay-appear"
             onClick={() => setSelectedSubmissionId(null)}
           />
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="selected-submission-title"
-            className="relative z-10 w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl"
+            className="relative z-10 w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl modal-panel-appear"
           >
             <div className="sticky top-0 flex items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/95 dark:bg-gray-900/95 px-6 py-4 backdrop-blur">
               <div>
@@ -1308,7 +1465,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                 Fechar
               </button>
             </div>
-            <div className="p-6">
+            <div className="p-6 modal-content-reveal">
               <SingleSubmissionView submission={selectedSubmission} />
             </div>
           </div>

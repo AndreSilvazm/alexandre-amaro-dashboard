@@ -1,7 +1,7 @@
 'use client';
 
 import { brazilStates } from '@/data/mockData';
-import { Search, Filter, MapPin, X, FileText, RotateCcw } from 'lucide-react';
+import { Search, Filter, MapPin, X, FileText, RotateCcw, Hash } from 'lucide-react';
 
 interface FiltersProps {
   selectedState: string;
@@ -10,6 +10,8 @@ interface FiltersProps {
   setSelectedCity: (city: string) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  cnpjSearch: string;
+  setCnpjSearch: (term: string) => void;
   cities: string[];
   onClearFilters: () => void;
   onClearSelection: () => void;
@@ -25,6 +27,8 @@ export default function Filters({
   setSelectedCity,
   searchTerm,
   setSearchTerm,
+  cnpjSearch,
+  setCnpjSearch,
   cities,
   onClearFilters,
   onClearSelection,
@@ -32,6 +36,10 @@ export default function Filters({
   selectedCount,
   filteredCount,
 }: FiltersProps) {
+
+  console.log('Renderizando Filters com:', {
+    selectedState,
+    selectedCity,});
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 transition-colors duration-300">
       <div className="flex flex-col lg:flex-row gap-4">
@@ -96,6 +104,34 @@ export default function Filters({
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* CNPJ Search */}
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+            <Hash className="w-4 h-4 text-amber-500" />
+            Buscar por CNPJ
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={14}
+              value={cnpjSearch}
+              onChange={(e) => setCnpjSearch(e.target.value.replace(/\D/g, ''))}
+              placeholder="Digite o CNPJ completo ou parcial"
+              className="w-full px-4 py-3 pl-4 pr-10 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-600 transition-all"
+            />
+            {cnpjSearch && (
+              <button
+                onClick={() => setCnpjSearch('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-5 h-5" />

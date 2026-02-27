@@ -330,6 +330,37 @@ body {
   }
 }
 
+@keyframes modalOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPanelRise {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modalContentFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-float-up {
   animation: floatUp 3s ease-in-out infinite;
 }
@@ -357,6 +388,18 @@ body {
 
 .animate-bounce-3d {
   animation: bounce3d 2s ease-in-out infinite;
+}
+
+.modal-overlay-appear {
+  animation: modalOverlayFadeIn 0.35s ease-out both;
+}
+
+.modal-panel-appear {
+  animation: modalPanelRise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.modal-content-reveal > * {
+  animation: modalContentFadeUp 0.45s ease-out both;
 }
 
 /* Gradient backgrounds - FEBRACA Theme with diversity */

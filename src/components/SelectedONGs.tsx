@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ONG } from '@/data/mockData';
 import { MapPin, Phone, Mail, Home, X, Users, ChevronDown, ChevronUp, MessageCircle, Copy, Check } from 'lucide-react';
 
@@ -175,6 +175,27 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
 }
 
 export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: SelectedONGsProps) {
+  const [activeONG, setActiveONG] = useState<ONG | null>(null);
+  const sortedONGs = useMemo(() => {
+    return [...selectedONGs].sort((a, b) => {
+      const nameA = (a.shortName || a.name).toLocaleLowerCase('pt-BR');
+      const nameB = (b.shortName || b.name).toLocaleLowerCase('pt-BR');
+      return nameA.localeCompare(nameB, 'pt-BR');
+    });
+  }, [selectedONGs]);
+
+  const handleRemove = (ong: ONG) => {
+    onRemove(ong);
+    if (activeONG && activeONG.id === ong.id) {
+      setActiveONG(null);
+    }
+  };
+
+  const handleClearAll = () => {
+    onClearAll();
+    setActiveONG(null);
+  };
+
   if (selectedONGs.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center transition-colors duration-300">
@@ -200,7 +221,7 @@ export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: Sel
           </span>
         </h3>
         <button
-          onClick={onClearAll}
+          onClick={handleClearAll}
           className="text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors flex items-center gap-1"
         >
           <X className="w-4 h-4" />
@@ -208,9 +229,35 @@ export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: Sel
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {selectedONGs.map((ong) => (
-          <ONGCard key={ong.id} ong={ong} onRemove={() => onRemove(ong)} />
+      <div className="border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
+        {sortedONGs.map((ong) => (
+          <div
+            key={ong.id}
+            className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-4 bg-white/40 dark:bg-gray-800/40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <div>
+              <p className="text-base font-semibold text-gray-900 dark:text-gray-100">{ong.shortName || ong.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{ong.city} • {ong.stateCode}</p>
+            </div>
+            <div className="flex-1" />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveONG(ong)}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#0d2857] dark:text-blue-300 border border-[#0d2857]/30 dark:border-blue-800 rounded-xl hover:bg-[#0d2857]/10 dark:hover:bg-blue-900/30 transition-colors"
+              >
+                Ver detalhes
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRemove(ong)}
+                className="inline-flex items-center justify-center p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                title="Remover ONG"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -241,6 +288,23 @@ export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: Sel
           <p className="text-sm text-gray-600 dark:text-gray-400">Estados</p>
         </div>
       </div>
+
+      {activeONG && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setActiveONG(null)} />
+          <div className="relative z-10 w-full max-w-2xl">
+            <button
+              type="button"
+              onClick={() => setActiveONG(null)}
+              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white text-gray-500 shadow-md hover:text-gray-700 flex items-center justify-center"
+              aria-label="Fechar detalhes"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <ONGCard ong={activeONG} onRemove={() => handleRemove(activeONG)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
