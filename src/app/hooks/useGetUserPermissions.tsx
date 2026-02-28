@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 const PERMISSION_TEMPLATE = {
   allowUserViewFormsQuestions: false,
+  allowUserViewFormsQuestionsV2: false,
 } as const;
 
 type PermissionKey = keyof typeof PERMISSION_TEMPLATE;
