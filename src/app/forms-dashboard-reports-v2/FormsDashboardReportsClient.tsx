@@ -748,6 +748,16 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
           ? `${stateFlagInfo.name} (${stateFlagInfo.code})`
           : selectedEntry.state || "—";
 
+        type HighlightChip = { label: string; value: string };
+        const highlightChips: HighlightChip[] = (
+          [
+            supportNeed && { label: "Apoio prioritário", value: supportNeed },
+            donationPriority && { label: "Doação prioritária", value: donationPriority },
+            donationNeed && { label: "Produtos necessários", value: donationNeed },
+            financialUse && { label: "Uso do recurso financeiro", value: financialUse },
+          ] as Array<HighlightChip | false>
+        ).filter((chip): chip is HighlightChip => Boolean(chip && chip.value && chip.value !== "—"));
+
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm modal-overlay-appear" onClick={closeModal} />
@@ -800,23 +810,19 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                       <p className="text-xs text-white/80 mt-1">CNPJ • {selectedEntry.cnpj}</p>
                     </div>
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    {[supportNeed && { label: "Apoio prioritário", value: supportNeed },
-                      donationPriority && { label: "Doação prioritária", value: donationPriority },
-                      donationNeed && { label: "Produtos necessários", value: donationNeed },
-                      financialUse && { label: "Uso do recurso financeiro", value: financialUse },
-                    ]
-                      .filter(Boolean)
-                      .map((item) => (
+                  {highlightChips.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      {highlightChips.map((chip) => (
                         <span
-                          key={`${selectedEntry.cnpj}-${item!.label}`}
+                          key={`${selectedEntry.cnpj}-${chip.label}`}
                           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 text-[11px] uppercase tracking-[0.25em]"
                         >
-                          <span className="text-white/70">{item!.label}</span>
-                          <span className="font-semibold text-white tracking-normal normal-case">{item!.value}</span>
+                          <span className="text-white/70">{chip.label}</span>
+                          <span className="font-semibold text-white tracking-normal normal-case">{chip.value}</span>
                         </span>
                       ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
