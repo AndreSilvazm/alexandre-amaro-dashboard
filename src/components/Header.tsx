@@ -133,6 +133,15 @@ export default function Header({
     [],
   );
 
+  const isLinkActive = useCallback(
+    (href: string) => {
+      if (!pathname) return false;
+      if (href === "/") return pathname === "/";
+      return pathname === href || pathname.startsWith(`${href}/`);
+    },
+    [pathname],
+  );
+
   const stories = useMemo<StorySlide[]>(
     () => [
       {
@@ -331,7 +340,7 @@ export default function Header({
 
               <nav className="hidden md:flex items-center gap-2 pl-6 border-l border-gray-200 dark:border-gray-700">
                 {navLinks.map(({ href, label, badge }) => {
-                  const isActive = pathname?.startsWith(href);
+                  const isActive = isLinkActive(href);
                   return (
                     <Link
                       key={href}

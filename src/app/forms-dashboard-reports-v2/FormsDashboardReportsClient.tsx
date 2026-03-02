@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Header from "@/components/Header";
 import PieChart from "@/components/PieChart";
 import BarChart from "@/components/BarChart";
@@ -175,6 +175,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
   const [selectedEntryKey, setSelectedEntryKey] = useState<string | null>(null);
   const [stateFilter, setStateFilter] = useState("all");
   const [cnpjQuery, setCnpjQuery] = useState("");
+  const modalPrintableRef = useRef<HTMLDivElement | null>(null);
   const dateFormatter = useMemo(
     () => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }),
     [],
@@ -371,6 +372,39 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
   };
 
   const closeModal = () => setSelectedEntryKey(null);
+
+  const handlePrintSelected = useCallback(() => {
+    if (typeof window === "undefined" || !selectedEntry) return;
+    const target = modalPrintableRef.current;
+    if (!target) return;
+
+    const printable = target.outerHTML;
+    const headClone = document.head.cloneNode(true) as HTMLHeadElement;
+    headClone.querySelectorAll("script").forEach((script) => script.remove());
+    const headContent = headClone.innerHTML;
+    const htmlClass = document.documentElement.getAttribute("class") || "";
+    const bodyClass = document.body.getAttribute("class") || "";
+    const title = `${selectedEntry.organization || "ONG"} – FEBRACA`;
+    const isDarkMode = document.documentElement.classList.contains("dark");
+    const bodyBackground = isDarkMode ? "#050916" : "#f8fafc";
+    const bodyColor = isDarkMode ? "#f8fafc" : "#0f172a";
+    const inlineStyles = `@page{margin:12mm;}body{padding:24px;background:${bodyBackground};color:${bodyColor};font-family:'Inter',system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;}*,*:before,*:after{-webkit-print-color-adjust:exact;print-color-adjust:exact;}img{max-width:100%;height:auto;} .modal-panel-appear,.modal-content-reveal{animation:none !important;} .printable-modal{max-height:none !important;height:auto !important;overflow:visible !important;} .printable-modal .sticky{position:relative !important;top:auto !important;}`;
+
+    const printWindow = window.open("", "_blank", "width=1024,height=768");
+    if (!printWindow) return;
+    printWindow.document.open();
+    printWindow.document.write(
+      `<!doctype html><html class="${htmlClass}"><head><title>${title}</title>${headContent}<style>${inlineStyles}</style></head><body class="${bodyClass}">${printable}</body></html>`,
+    );
+    printWindow.document.close();
+    printWindow.addEventListener("load", () => {
+      printWindow.focus();
+      printWindow.print();
+      setTimeout(() => {
+        printWindow.close();
+      }, 250);
+    });
+  }, [selectedEntry]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -765,7 +799,8 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
               role="dialog"
               aria-modal="true"
               aria-labelledby="selected-entry-title"
-              className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl modal-panel-appear"
+              ref={modalPrintableRef}
+              className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl modal-panel-appear printable-modal"
             >
               <div className="sticky top-0 flex items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/95 dark:bg-gray-900/95 px-6 py-4 backdrop-blur">
                 <div>
@@ -774,13 +809,22 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                     {selectedEntry.organization || "Organização sem nome"}
                   </h2>
                 </div>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
-                >
-                  Fechar
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrintSelected}
+                    className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-[#0d2857] dark:text-emerald-200 hover:bg-[#0d2857] hover:text-white dark:hover:text-gray-900 dark:hover:bg-emerald-300 transition-colors"
+                  >
+                    Gerar PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                  >
+                    Fechar
+                  </button>
+                </div>
               </div>
 
               <div className="p-6 space-y-6 modal-content-reveal">
