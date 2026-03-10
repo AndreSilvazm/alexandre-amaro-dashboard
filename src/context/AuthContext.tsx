@@ -18,7 +18,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const SESSION_KEY = 'febraca_session';
+const SESSION_KEY = 'amaro_session';
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 dias em milissegundos
 
 function clearSessionCookie() {

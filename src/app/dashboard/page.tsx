@@ -293,7 +293,7 @@ export default function DashboardPage() {
     const date = new Date().toISOString().split('T')[0];
     const filterInfo = selectedState ? `_${selectedState}` : '';
     const cityInfo = selectedCity ? `_${selectedCity.replace(/\s/g, '-')}` : '';
-    const fileName = `FEBRACA_ONGs${filterInfo}${cityInfo}_${date}.xlsx`;
+    const fileName = `AMARO_ONGs${filterInfo}${cityInfo}_${date}.xlsx`;
 
     // Fazer download
     XLSX.writeFile(wb, fileName);
@@ -308,7 +308,7 @@ export default function DashboardPage() {
   if (authLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-4 border-[#0d2857] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-[#02186b] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -343,9 +343,9 @@ export default function DashboardPage() {
         {isLoading && ongs.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-[#0d2857]/20 border-t-[#0d2857] rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-4 border-[#02186b]/20 border-t-[#02186b] rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl">🐾</span>
+                <span className="text-2xl">⚙️</span>
               </div>
             </div>
             <p className="mt-4 text-gray-600 font-medium">Carregando dados das ONGs...</p>
@@ -392,7 +392,7 @@ export default function DashboardPage() {
         {/* Map Section */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6 transition-colors duration-300">
           <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-[#0d2857]"></span>
+            <span className="w-3 h-3 rounded-full bg-[#02186b]"></span>
             Mapa de ONGs
             <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
               (Clique em um marcador ou use a seleção por área)
@@ -432,17 +432,17 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              © 2026 FEBRACA - Federação Brasileira da Causa Animal. Todos os direitos reservados.
+              © 2026 Gabinete do Deputado Alexandre Amaro. Todos os direitos reservados.
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-sm text-gray-500 dark:text-gray-400 hover:text-[#0d2857] dark:hover:text-blue-400 transition-colors">
+              <a href="#" className="text-sm text-gray-500 dark:text-gray-400 hover:text-[#02186b] dark:hover:text-blue-400 transition-colors">
                 Política de Privacidade
               </a>
-              <a href="#" className="text-sm text-gray-500 dark:text-gray-400 hover:text-[#0d2857] dark:hover:text-blue-400 transition-colors">
+              <a href="#" className="text-sm text-gray-500 dark:text-gray-400 hover:text-[#02186b] dark:hover:text-blue-400 transition-colors">
                 Termos de Uso
               </a>
-              <a href="https://febraca.org.br" target="_blank" rel="noopener noreferrer" className="text-sm text-[#0d2857] dark:text-blue-400 hover:text-[#022873] dark:hover:text-blue-300 font-medium transition-colors">
-                febraca.org.br
+              <a href="https://alexandreamaro.com.br" target="_blank" rel="noopener noreferrer" className="text-sm text-[#02186b] dark:text-blue-400 hover:text-[#010f45] dark:hover:text-blue-300 font-medium transition-colors">
+                alexandreamaro.com.br
               </a>
             </div>
           </div>

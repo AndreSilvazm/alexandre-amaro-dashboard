@@ -1,14 +1,28 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ONG } from '@/data/mockData';
-import { MapPin, Phone, Mail, Home, X, Users, ChevronDown, ChevronUp, MessageCircle, Copy, Check } from 'lucide-react';
+import { MapPin, Phone, Mail, Home, X, Users, ChevronDown, ChevronUp, MessageCircle, Copy, Check, LayoutGrid, List } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface SelectedONGsProps {
   selectedONGs: ONG[];
   onRemove: (ong: ONG) => void;
   onClearAll: () => void;
 }
+
+type SelectedViewMode = 'modal' | 'cards';
+
+interface SelectedViewModeOption {
+  id: SelectedViewMode;
+  label: string;
+  Icon: LucideIcon;
+}
+
+const VIEW_MODE_OPTIONS: SelectedViewModeOption[] = [
+  { id: 'modal', label: 'Lista + modal', Icon: List },
+  { id: 'cards', label: 'Cards completos', Icon: LayoutGrid },
+];
 
 function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
   const [showSocios, setShowSocios] = useState(false);
@@ -35,12 +49,12 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
   };
 
   const whatsappNumber = formatWhatsApp(ong.whatsapp);
-  const whatsappMessage = encodeURIComponent(`Olá! Estou entrando em contato através do portal FEBRACA. Gostaria de saber mais sobre a ${ong.shortName || ong.name}.`);
+  const whatsappMessage = encodeURIComponent(`Olá! Estou entrando em contato através do painel do Deputado Alexandre Amaro. Gostaria de saber mais sobre a ${ong.shortName || ong.name}.`);
 
   return (
     <div className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-lg transition-all group">
       {/* Header with remove button */}
-      <div className="bg-gradient-to-r from-[#0d2857] to-emerald-500 px-4 py-3 text-white">
+      <div className="bg-gradient-to-r from-[#02186b] to-emerald-500 px-4 py-3 text-white">
         <button
           onClick={onRemove}
           className="absolute top-2 right-2 p-1 bg-white/20 hover:bg-white/40 rounded-lg transition-all opacity-0 group-hover:opacity-100"
@@ -116,8 +130,8 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
           </div>
           {ong.email ? (
             <a
-              href={`mailto:${ong.email}?subject=Contato%20via%20FEBRACA&body=Ol%C3%A1!%20Estou%20entrando%20em%20contato%20atrav%C3%A9s%20do%20portal%20FEBRACA.`}
-              className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#0d2857] hover:bg-[#1e4080] dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-all"
+              href={`mailto:${ong.email}?subject=Contato%20via%20Gabinete%20Alexandre%20Amaro&body=Ol%C3%A1!%20Estou%20em%20contato%20pelo%20painel%20do%20Deputado%20Alexandre%20Amaro.`}
+              className="flex items-center justify-center gap-2 w-full py-2.5 bg-[#02186b] hover:bg-[#0c2fa3] dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-all"
             >
               <Mail className="w-5 h-5" />
               Enviar Email
@@ -147,7 +161,7 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4 text-gray-400" />
               <span className="font-medium">{ong.socios.length} sócio(s)</span>
-              <span className="text-[#0d2857] dark:text-blue-400 hover:underline">— ver lista</span>
+              <span className="text-[#02186b] dark:text-blue-400 hover:underline">— ver lista</span>
             </span>
             {showSocios ? (
               <ChevronUp className="w-4 h-4" />
@@ -176,6 +190,7 @@ function ONGCard({ ong, onRemove }: { ong: ONG; onRemove: () => void }) {
 
 export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: SelectedONGsProps) {
   const [activeONG, setActiveONG] = useState<ONG | null>(null);
+  const [viewMode, setViewMode] = useState<SelectedViewMode>('modal');
   const sortedONGs = useMemo(() => {
     return [...selectedONGs].sort((a, b) => {
       const nameA = (a.shortName || a.name).toLocaleLowerCase('pt-BR');
@@ -183,6 +198,12 @@ export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: Sel
       return nameA.localeCompare(nameB, 'pt-BR');
     });
   }, [selectedONGs]);
+
+  useEffect(() => {
+    if (viewMode === 'cards') {
+      setActiveONG(null);
+    }
+  }, [viewMode]);
 
   const handleRemove = (ong: ONG) => {
     onRemove(ong);
@@ -212,59 +233,89 @@ export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: Sel
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-colors duration-300">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#0d2857]"></span>
+          <span className="w-3 h-3 rounded-full bg-[#02186b]"></span>
           ONGs Selecionadas
-          <span className="ml-2 px-3 py-1 bg-[#0d2857]/10 dark:bg-blue-900/30 text-[#0d2857] dark:text-blue-400 text-sm font-semibold rounded-full">
+          <span className="ml-2 px-3 py-1 bg-[#02186b]/10 dark:bg-blue-900/30 text-[#02186b] dark:text-blue-400 text-sm font-semibold rounded-full">
             {selectedONGs.length}
           </span>
         </h3>
-        <button
-          onClick={handleClearAll}
-          className="text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors flex items-center gap-1"
-        >
-          <X className="w-4 h-4" />
-          Limpar Seleção
-        </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-1">
+            {VIEW_MODE_OPTIONS.map(({ id, label, Icon }) => {
+              const isActive = viewMode === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setViewMode(id)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-xl transition-colors ${
+                    isActive
+                      ? 'bg-white dark:bg-gray-800 text-[#02186b] dark:text-blue-300 shadow'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-[#02186b] dark:hover:text-blue-200'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="sr-only">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={handleClearAll}
+            className="text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors flex items-center gap-1"
+          >
+            <X className="w-4 h-4" />
+            Limpar Seleção
+          </button>
+        </div>
       </div>
 
-      <div className="border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
-        {sortedONGs.map((ong) => (
-          <div
-            key={ong.id}
-            className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-4 bg-white/40 dark:bg-gray-800/40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <div>
-              <p className="text-base font-semibold text-gray-900 dark:text-gray-100">{ong.shortName || ong.name}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{ong.city} • {ong.stateCode}</p>
+      {viewMode === 'modal' ? (
+        <div className="border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden divide-y divide-gray-100 dark:divide-gray-700">
+          {sortedONGs.map((ong) => (
+            <div
+              key={ong.id}
+              className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 py-4 bg-white/40 dark:bg-gray-800/40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div>
+                <p className="text-base font-semibold text-gray-900 dark:text-gray-100">{ong.shortName || ong.name}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{ong.city} • {ong.stateCode}</p>
+              </div>
+              <div className="flex-1" />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveONG(ong)}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#02186b] dark:text-blue-300 border border-[#02186b]/30 dark:border-blue-800 rounded-xl hover:bg-[#02186b]/10 dark:hover:bg-blue-900/30 transition-colors"
+                >
+                  Ver detalhes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRemove(ong)}
+                  className="inline-flex items-center justify-center p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                  title="Remover ONG"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex-1" />
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveONG(ong)}
-                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#0d2857] dark:text-blue-300 border border-[#0d2857]/30 dark:border-blue-800 rounded-xl hover:bg-[#0d2857]/10 dark:hover:bg-blue-900/30 transition-colors"
-              >
-                Ver detalhes
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRemove(ong)}
-                className="inline-flex items-center justify-center p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
-                title="Remover ONG"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          {sortedONGs.map((ong) => (
+            <ONGCard key={ong.id} ong={ong} onRemove={() => handleRemove(ong)} />
+          ))}
+        </div>
+      )}
 
       {/* Summary stats */}
       <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="text-center p-4 bg-[#0d2857]/10 dark:bg-blue-900/30 rounded-xl">
-          <p className="text-2xl font-bold text-[#0d2857] dark:text-blue-400">
+        <div className="text-center p-4 bg-[#02186b]/10 dark:bg-blue-900/30 rounded-xl">
+          <p className="text-2xl font-bold text-[#02186b] dark:text-blue-400">
             {selectedONGs.length}
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400">ONGs Selecionadas</p>
@@ -289,7 +340,7 @@ export default function SelectedONGs({ selectedONGs, onRemove, onClearAll }: Sel
         </div>
       </div>
 
-      {activeONG && (
+      {viewMode === 'modal' && activeONG && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60" onClick={() => setActiveONG(null)} />
           <div className="relative z-10 w-full max-w-2xl">

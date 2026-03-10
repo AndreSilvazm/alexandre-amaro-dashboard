@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FEBRACA - Dashboard de ONGs",
+  title: "Alexandre Amaro - Dashboard de ONGs",
   description: "Sistema de gestão e visualização de ONGs da causa animal",
 };
 

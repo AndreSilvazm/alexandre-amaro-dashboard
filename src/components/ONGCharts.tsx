@@ -16,7 +16,7 @@ interface ONGChartsProps {
 }
 
 const COLORS = [
-  '#0d2857', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899',
+  '#02186b', '#ffca27', '#0c2fa3', '#10B981', '#EC4899',
   '#0EA5E9', '#14B8A6', '#F97316', '#6366F1', '#EF4444'
 ];
 
@@ -54,7 +54,7 @@ export default function ONGCharts({ stateData, cityData, selectedState }: ONGCha
       {/* ONGs by State Chart */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 card-hover transition-colors duration-300">
         <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#0d2857]"></span>
+          <span className="w-3 h-3 rounded-full bg-[#02186b]"></span>
           ONGs por Estado
         </h3>
         <div className="h-80">

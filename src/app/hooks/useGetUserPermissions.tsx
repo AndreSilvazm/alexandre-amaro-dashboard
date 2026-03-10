@@ -13,7 +13,7 @@ async function useGetUserPermissions(): Promise<PermissionResult> {
   const basePermissions: PermissionResult = { ...PERMISSION_TEMPLATE };
 
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("febraca_session");
+  const sessionCookie = cookieStore.get("amaro_session");
 
   if (!sessionCookie) return basePermissions;
 

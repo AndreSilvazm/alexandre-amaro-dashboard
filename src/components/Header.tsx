@@ -17,11 +17,19 @@ import { useAuth } from "@/context/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import logoAmaro from "../../public/Logo.png";
 
 interface HeaderProps {
   lastUpdate?: string;
   onRefresh?: () => void;
   isLoading?: boolean;
+}
+
+interface NavLink {
+  href: string;
+  label: string;
+  badge?: string;
+  requiredPermission?: string;
 }
 
 interface StorySlide {
@@ -75,6 +83,9 @@ export default function Header({
   const [isStoryPaused, setIsStoryPaused] = useState(false);
   const storyIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const canViewStories = Boolean(
+    user?.permissions?.includes("allowUserViewStories"),
+  );
 
   const clearStoryTimer = useCallback(() => {
     if (storyIntervalRef.current) {
@@ -116,22 +127,31 @@ export default function Header({
     setIsMobileNavOpen(false);
   };
 
-  const navLinks = useMemo(
-    () => [
+  const navLinks = useMemo<NavLink[]>(() => {
+    const permissionSet = new Set(user?.permissions ?? []);
+    const baseLinks: NavLink[] = [
       { href: "/dashboard", label: "Mapa e Relatórios" },
       {
         href: "/forms-dashboard",
         label: "Formulários das ONGs",
         badge: "Novo",
+        requiredPermission: "allowUserViewFormsQuestions",
       },
       {
         href: "/forms-dashboard-reports-v2",
         label: "Formulários de relatórios 2.0",
         badge: "Novo",
+        requiredPermission: "allowUserViewFormsQuestionsV2",
       },
-    ],
-    [],
-  );
+    ];
+
+    return baseLinks.filter((link) => {
+      if (!link.requiredPermission) {
+        return true;
+      }
+      return permissionSet.has(link.requiredPermission);
+    });
+  }, [user?.permissions]);
 
   const isLinkActive = useCallback(
     (href: string) => {
@@ -145,62 +165,62 @@ export default function Header({
   const stories = useMemo<StorySlide[]>(
     () => [
       {
-        id: "febraca-intro",
-        badge: "Sobre a FEBRACA",
+        id: "gabinete-intro",
+        badge: "Sobre o Gabinete",
         subtitle: "Quem somos",
-        title: "Conectamos e fortalecemos a causa animal",
+        title: "Representamos as ONGs dentro do Parlamento",
         description:
-          "A FEBRACA – Federação Brasileira da Causa Animal – é uma organização sem fins lucrativos que conecta, apoia e representa ONGs de proteção em todo o país.",
+          "O Deputado Alexandre Amaro mantém um gabinete dedicado à causa animal, ouvindo lideranças e levando prioridades para votações estratégicas.",
         highlights: [
-          "Rede nacional oferece capacitações e mentorias para que as ONGs ganhem estrutura.",
-          "Atuação direta em políticas públicas para defender a causa animal em Brasília e nos municípios.",
-          "Projetos de apoio ajudam organizações a acessar recursos, gestão eficiente e visibilidade.",
+          "Rede nacional de ONGs validadas com contato direto com a equipe.",
+          "Defesa permanente no plenário e nas comissões temáticas.",
+          "Monitoramento de recursos para destravar investimentos urgentes.",
         ],
-        footnote: "Fonte: febraca.org.br/sobre • 2026",
-        gradient: "from-[#0d2857] via-indigo-700 to-emerald-500",
+        footnote: "Gabinete do Deputado Alexandre Amaro • 2026",
+        gradient: "from-[#02186b] via-[#0c2fa3] to-[#ffca27]",
         media: {
-          src: "https://febraca.org.br/wp-content/uploads/2025/11/Logo-Febraca-2-1-1024x1024.png",
-          alt: "Logo FEBRACA",
-          caption: "FEBRACA — Federação Brasileira da Causa Animal",
+          src: logoAmaro.src,
+          alt: "Logo do Deputado Alexandre Amaro",
+          caption: "Gabinete Alexandre Amaro",
           shape: "logo",
         },
       },
       {
         id: "map-dashboard",
-        badge: "Novidades Mapa",
+        badge: "Inteligência territorial",
         subtitle: "/dashboard",
         title: "Mapa mostra onde agir primeiro",
         description:
-          "Refinamos o painel de mapas para que qualquer pessoa veja, em segundos, onde estão as ONGs mais ativas e quais regiões pedem reforço.",
+          "Os filtros geográficos ligam cada ONG à sua demanda principal, facilitando a priorização de emendas e agendas no interior do estado.",
         highlights: [
-          "Filtros simples e botões de foco levam direto para o estado que precisa de atenção.",
-          "Cards encostados no mapa mostram contato e urgência sem jargões.",
-          "Resumo lateral avisa o que mudou desde a última visita e sugere próximos passos.",
+          "Botões de foco levam direto ao estado com maior volume de solicitações.",
+          "Cards laterais já trazem contatos oficiais e histórico resumido.",
+          "Alertas indicam o que mudou desde a última visita e sugerem próximos passos.",
         ],
-        footnote: "Atualização visual e de usabilidade • 2026",
-        gradient: "from-[#0d2857] via-sky-700 to-emerald-500",
+        footnote: "Atualização estratégica do gabinete • 2026",
+        gradient: "from-[#02186b] via-sky-700 to-emerald-500",
       },
       {
         id: "forms-dashboard",
-        badge: "Novidades Forms",
+        badge: "Rotina com ONGs",
         subtitle: "/forms-dashboard",
-        title: "Formulários viraram dossiês claros",
+        title: "Formulários viraram dossiês legislativos",
         description:
-          "Os formulários agora ocupam a tela inteira, com resumo rápido de contatos, estrutura humana e pedidos mais urgentes.",
+          "Cada formulário agora gera um dossiê com estrutura humana, pedidos urgentes e mensagem política pronta para levar aos demais deputados.",
         highlights: [
-          "Visão única mostra uma ONG por vez com cartões grandes, fáceis de ler em reunião.",
-          "Filtros e busca entendem nome, cidade e responsável sem precisar de códigos.",
-          "Lista final destaca melhorias desejadas e mensagem ao Congresso para ação imediata.",
+          "Visualização única destaca quem precisa de recursos ou articulação jurídica.",
+          "Busca entende nome, cidade ou responsável sem códigos.",
+          "Resumo final mostra melhorias pedidas e a mensagem que será levada ao plenário.",
         ],
-        footnote: "Conteúdo atualizado em Fevereiro/2026",
-        gradient: "from-[#ff7a18] via-[#ff3d81] to-[#742ddd]",
+        footnote: "Conteúdo sincronizado em fevereiro/2026",
+        gradient: "from-[#ffca27] via-[#f97316] to-[#7c3aed]",
       },
     ],
     [],
   );
 
   const openStories = () => {
-    if (!stories.length) return;
+    if (!canViewStories || !stories.length) return;
     clearStoryTimer();
     setCurrentStoryIndex(0);
     setStoryProgress(0);
@@ -300,6 +320,12 @@ export default function Header({
     currentStory?.chart,
   );
 
+  useEffect(() => {
+    if (!canViewStories && showStories) {
+      closeStories();
+    }
+  }, [canViewStories, showStories, closeStories]);
+
   return (
     <>
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-100 dark:border-gray-700 sticky top-0 z-50 transition-colors duration-300">
@@ -310,8 +336,8 @@ export default function Header({
               <Link href="/dashboard" className="flex items-center gap-3 group">
                 <div className="w-10 h-10 bg-white dark:bg-gray-700 rounded-xl flex items-center justify-center shadow-md border border-gray-100 dark:border-gray-600 p-0.5 transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 animate-glow-pulse">
                   <Image
-                    src="https://febraca.org.br/wp-content/uploads/2025/08/cropped-Logo-Febraca-2-150x150.png"
-                    alt="FEBRACA Logo"
+                    src={logoAmaro}
+                    alt="Logo do Deputado Alexandre Amaro"
                     width={36}
                     height={36}
                     className="w-full h-full object-contain"
@@ -319,15 +345,15 @@ export default function Header({
                   />
                 </div>
                 <div className="hidden sm:block">
-                  <h1 className="text-xl font-bold text-gray-800 dark:text-white group-hover:text-[#0d2857] dark:group-hover:text-blue-400 transition-colors flex items-center gap-2">
-                    Relatórios de ONGs Brasil
-                    <span className="text-[10px] uppercase tracking-wide bg-[#0d2857] text-white dark:bg-blue-500/80 dark:text-gray-900 px-2 py-0.5 rounded-full border border-[#0d2857]/40 dark:border-blue-400/40 font-semibold shadow-sm">
-                      v2.0.0
+                  <h1 className="text-xl font-bold text-gray-800 dark:text-white group-hover:text-[#02186b] dark:group-hover:text-blue-400 transition-colors flex items-center gap-2">
+                    Painel Alexandre Amaro
+                    <span className="text-[10px] uppercase tracking-wide bg-[#02186b] text-white dark:bg-blue-500/80 dark:text-gray-900 px-2 py-0.5 rounded-full border border-[#02186b]/40 dark:border-blue-400/40 font-semibold shadow-sm">
+                      Base 2.0
                     </span>
                   </h1>
                   <div className="flex items-center gap-2">
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      FEBRACA Dashboard
+                      Gabinete do Deputado Alexandre Amaro
                     </p>
                     {lastUpdate && (
                       <span className="text-xs text-gray-400 dark:text-gray-500 italic">
@@ -347,8 +373,8 @@ export default function Header({
                       href={href}
                       className={`px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
                         isActive
-                          ? "bg-[#0d2857] text-white dark:bg-blue-500/80"
-                          : "text-gray-500 dark:text-gray-400 hover:text-[#0d2857] dark:hover:text-blue-300 hover:bg-gray-100/70 dark:hover:bg-gray-900"
+                          ? "bg-[#02186b] text-white dark:bg-blue-500/80"
+                          : "text-gray-500 dark:text-gray-400 hover:text-[#02186b] dark:hover:text-blue-300 hover:bg-gray-100/70 dark:hover:bg-gray-900"
                       }`}
                     >
                       <span>{label}</span>
@@ -368,7 +394,7 @@ export default function Header({
               <button
                 type="button"
                 onClick={toggleMobileNav}
-                className="md:hidden p-2 text-gray-500 dark:text-gray-400 hover:text-[#0d2857] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                className="md:hidden p-2 text-gray-500 dark:text-gray-400 hover:text-[#02186b] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
                 aria-label={
                   isMobileNavOpen
                     ? "Fechar menu de navegação"
@@ -421,47 +447,74 @@ export default function Header({
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {user?.cargo || "Cargo não informado"}
                   </p>
+                  {canViewStories && (
+                    <button
+                      type="button"
+                      onClick={openStories}
+                      className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#02186b] dark:text-emerald-200 hover:text-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                    >
+                      Stories
+                    </button>
+                  )}
+                </div>
+                {canViewStories ? (
                   <button
                     type="button"
                     onClick={openStories}
-                    className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#0d2857] dark:text-emerald-200 hover:text-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                    title="Ver novidades da plataforma"
+                    aria-label="Abrir stories da plataforma"
+                    className="relative group focus:outline-none"
                   >
-                    Stories
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  onClick={openStories}
-                  title="Ver novidades da plataforma"
-                  aria-label="Abrir stories da plataforma"
-                  className="relative group focus:outline-none"
-                >
-                  <span className="sr-only">
-                    Abrir stories sobre as novidades da FEBRACA
-                  </span>
-                  <span className="absolute -inset-1 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-emerald-400 opacity-60 blur transition-all duration-300 group-hover:opacity-90" />
-                  <div className="relative p-[2px] rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-emerald-400 shadow-lg shadow-rose-500/20">
-                    <div className="w-10 h-10 rounded-full border border-white/40 dark:border-white/10 bg-gradient-to-br from-[#0d2857] to-emerald-500 text-white font-semibold flex items-center justify-center overflow-hidden">
-                      {hasProfilePhoto ? (
-                        <img
-                          src={user?.img_url || ""}
-                          alt={
-                            user?.name
-                              ? `Foto de ${user.name}`
-                              : "Foto do usuário"
-                          }
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          onError={() => setAvatarError(true)}
-                        />
-                      ) : (
-                        userInitial
-                      )}
+                    <span className="sr-only">
+                      Abrir stories sobre as novidades do gabinete Alexandre Amaro
+                    </span>
+                    <span className="absolute -inset-1 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-emerald-400 opacity-60 blur transition-all duration-300 group-hover:opacity-90" />
+                    <div className="relative p-[2px] rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-emerald-400 shadow-lg shadow-rose-500/20">
+                      <div className="w-10 h-10 rounded-full border border-white/40 dark:border-white/10 bg-gradient-to-br from-[#02186b] to-emerald-500 text-white font-semibold flex items-center justify-center overflow-hidden">
+                        {hasProfilePhoto ? (
+                          <img
+                            src={user?.img_url || ""}
+                            alt={
+                              user?.name
+                                ? `Foto de ${user.name}`
+                                : "Foto do usuário"
+                            }
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            onError={() => setAvatarError(true)}
+                          />
+                        ) : (
+                          userInitial
+                        )}
+                      </div>
+                      <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 shadow shadow-emerald-500/50 animate-pulse" />
                     </div>
-                    <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 shadow shadow-emerald-500/50 animate-pulse" />
+                  </button>
+                ) : (
+                  <div className="relative">
+                    <div className="relative p-[2px] rounded-full bg-gradient-to-tr from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 opacity-80">
+                      <div className="w-10 h-10 rounded-full border border-white/40 dark:border-white/10 bg-gradient-to-br from-[#02186b] to-emerald-500 text-white font-semibold flex items-center justify-center overflow-hidden">
+                        {hasProfilePhoto ? (
+                          <img
+                            src={user?.img_url || ""}
+                            alt={
+                              user?.name
+                                ? `Foto de ${user.name}`
+                                : "Foto do usuário"
+                            }
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            onError={() => setAvatarError(true)}
+                          />
+                        ) : (
+                          userInitial
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </button>
+                )}
               </div>
 
               {/* Logout */}
@@ -487,7 +540,7 @@ export default function Header({
                     onClick={handleMobileNavLinkClick}
                     className={`flex items-center justify-between px-3 py-2 rounded-xl border text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-[#0d2857] text-white border-[#0d2857]"
+                        ? "bg-[#02186b] text-white border-[#02186b]"
                         : "bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
                     }`}
                   >
@@ -504,7 +557,7 @@ export default function Header({
           </div>
         )}
       </header>
-      {showStories && currentStory && (
+      {canViewStories && showStories && currentStory && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 py-8">
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
@@ -628,7 +681,7 @@ export default function Header({
                       <button
                         type="button"
                         onClick={isLastStory ? closeStories : handleNextStory}
-                        className="px-3 py-1.5 rounded-full bg-white text-[#0d2857] font-semibold text-[11px] uppercase tracking-[0.3em] shadow-lg shadow-black/20"
+                        className="px-3 py-1.5 rounded-full bg-white text-[#02186b] font-semibold text-[11px] uppercase tracking-[0.3em] shadow-lg shadow-black/20"
                       >
                         {isLastStory ? "Concluir" : "Próximo"}
                       </button>

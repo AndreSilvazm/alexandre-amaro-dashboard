@@ -33,7 +33,7 @@ const STATE_COLORS: Record<string, { color: string; name: string }> = {
   'RO': { color: '#0369A1', name: 'Rondônia' },       // Azul céu escuro
   'RR': { color: '#A21CAF', name: 'Roraima' },        // Fúcsia
   'SC': { color: '#0284C7', name: 'Santa Catarina' }, // Azul claro
-  'SP': { color: '#0d2857', name: 'São Paulo' },      // Azul FEBRACA (cor principal)
+  'SP': { color: '#02186b', name: 'São Paulo' },      // Azul Alexandre Amaro (cor principal)
   'SE': { color: '#0F766E', name: 'Sergipe' },        // Teal escuro
   'TO': { color: '#B91C1C', name: 'Tocantins' },      // Vermelho escuro
 };
@@ -101,9 +101,9 @@ function BoxSelector({ isActive, ongs, onBoxSelect, selectionBounds, setSelectio
     <Rectangle
       bounds={selectionBounds}
       pathOptions={{
-        color: '#0d2857',
+        color: '#02186b',
         weight: 2,
-        fillColor: '#0d2857',
+        fillColor: '#02186b',
         fillOpacity: 0.2,
         dashArray: '5, 5',
       }}
@@ -122,7 +122,7 @@ function MapLegend({ visibleStates }: { visibleStates: string[] }) {
   return (
     <div className="absolute bottom-4 left-4 z-[10] bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 max-h-[300px] overflow-y-auto">
       <h4 className="font-bold text-gray-800 dark:text-white text-sm mb-3 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-[#0d2857] dark:bg-blue-400"></span>
+        <span className="w-2 h-2 rounded-full bg-[#02186b] dark:bg-blue-400"></span>
         Legenda por Estado
       </h4>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
@@ -260,7 +260,7 @@ export default function MapComponent({ ongs, selectedONGs, onONGClick, onBoxSele
           onClick={toggleBoxSelectMode}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-lg transition-all ${
             boxSelectMode
-              ? 'bg-[#0d2857] text-white hover:bg-[#022873]'
+              ? 'bg-[#02186b] text-white hover:bg-[#010f45]'
               : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600'
           }`}
           title={boxSelectMode ? 'Desativar seleção por área' : 'Ativar seleção por área'}
@@ -297,7 +297,7 @@ export default function MapComponent({ ongs, selectedONGs, onONGClick, onBoxSele
 
       {/* Box Select Mode Indicator */}
       {boxSelectMode && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[10] bg-[#0d2857] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg animate-pulse">
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[10] bg-[#02186b] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg animate-pulse">
           🖱️ Clique e arraste para selecionar ONGs na área
         </div>
       )}
@@ -398,7 +398,7 @@ export default function MapComponent({ ongs, selectedONGs, onONGClick, onBoxSele
                   </div>
                   <h3 className="font-bold text-gray-800 text-sm mb-1 leading-tight">{ong.name}</h3>
                   {ong.shortName && (
-                    <p className="text-xs text-[#0d2857] font-medium mb-2">{ong.shortName}</p>
+                    <p className="text-xs text-[#02186b] font-medium mb-2">{ong.shortName}</p>
                   )}
                   <div className="space-y-1 text-xs">
                     <p className="text-gray-600 flex items-center gap-2">
@@ -430,7 +430,7 @@ export default function MapComponent({ ongs, selectedONGs, onONGClick, onBoxSele
                     className={`mt-3 w-full py-2 px-4 rounded-lg text-white text-xs font-medium transition-all ${
                       selected
                         ? 'bg-red-500 hover:bg-red-600'
-                        : 'bg-[#0d2857] hover:bg-[#022873]'
+                        : 'bg-[#02186b] hover:bg-[#010f45]'
                     }`}
                   >
                     {selected ? '✕ Remover da Seleção' : '✓ Selecionar ONG'}

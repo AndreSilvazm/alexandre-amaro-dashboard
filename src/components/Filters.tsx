@@ -46,7 +46,7 @@ export default function Filters({
         {/* State Filter */}
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-            <Filter className="w-4 h-4 text-[#0d2857] dark:text-blue-400" />
+            <Filter className="w-4 h-4 text-[#02186b] dark:text-blue-400" />
             Filtrar por Estado
           </label>
           <select

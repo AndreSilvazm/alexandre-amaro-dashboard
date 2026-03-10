@@ -25,18 +25,18 @@ export default async function Page() {
           </div>
           <h1 className="text-2xl font-semibold">Acesso restrito</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Você não possui permissão para visualizar os formulários das ONGs. Solicite o acesso ao time FEBRACA ou volte para o painel principal.
+            Você não possui permissão para visualizar os formulários das ONGs. Solicite o acesso ao gabinete do Deputado Alexandre Amaro ou volte para o painel principal.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Link
-              href="mailto:contato@febraca.org.br"
+              href="mailto:gabinete@alexandreamaro.com.br"
               className="flex-1 inline-flex items-center justify-center rounded-xl border border-amber-400 text-amber-700 dark:text-amber-400 px-4 py-2 text-sm font-medium hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
             >
               Pedir acesso
             </Link>
             <Link
               href="/dashboard"
-              className="flex-1 inline-flex items-center justify-center rounded-xl bg-[#0d2857] text-white px-4 py-2 text-sm font-semibold hover:bg-[#133776] transition-colors"
+              className="flex-1 inline-flex items-center justify-center rounded-xl bg-[#02186b] text-white px-4 py-2 text-sm font-semibold hover:bg-[#133776] transition-colors"
             >
               Voltar ao dashboard
             </Link>

@@ -9,7 +9,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       attribute="class"
       defaultTheme="light"
       enableSystem={false}
-      storageKey="febraca-theme"
+      storageKey="amaro-theme"
     >
       {children}
     </NextThemesProvider>

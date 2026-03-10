@@ -15,13 +15,13 @@ export interface User {
 export const mockUsers: User[] = [
   {
     id: "1",
-    username: "tzzms",
-    password: "0J28G22Y",
-    name: "Carlos Pinotti",
+    username: "alexandreAmaro",
+    password: "0962312351",
+    name: "Alexandre Amaro",
     role: "admin",
-    permissions: ["allowUserViewFormsQuestions", "allowUserViewFormsQuestionsV2"],
-    img_url: "https://media.licdn.com/dms/image/v2/D4D03AQEFNHIlLMUqmA/profile-displayphoto-shrink_200_200/B4DZVsqzQNG4Ac-/0/1741284914703?e=2147483647&v=beta&t=6n_iCN1X9tfUcUF_DI7gag1AnKaf9NeoIftL9K_LeTM",
-    cargo: "Diretor da Febraca",
+    permissions: [],
+    img_url: "https://republicanos10.org.br/wp-content/uploads/2019/02/Alexandre-amaro.png",
+    cargo: "Deputado Estadual",
   },
 
     {
@@ -30,7 +30,7 @@ export const mockUsers: User[] = [
     password: "arcanimal2024@",
     name: "Perfil Arcanimal",
     role: "admin",
-    permissions: ["allowUserViewFormsQuestions", "allowUserViewFormsQuestionsV2"],
+    permissions: ["allowUserViewFormsQuestions", "allowUserViewFormsQuestionsV2", "allowUserViewStories"],
     img_url: "",
     cargo: "Time desenvolvimento",
   },

@@ -19,7 +19,7 @@ const MapComponent = dynamic(() => import('./MapComponent'), {
   loading: () => (
     <div className="w-full h-full bg-gray-100 rounded-xl flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-4 border-[#0d2857] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#02186b] border-t-transparent rounded-full animate-spin"></div>
         <p className="text-gray-500">Carregando mapa...</p>
       </div>
     </div>

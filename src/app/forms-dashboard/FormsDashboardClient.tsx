@@ -6,6 +6,8 @@ import Header from "@/components/Header";
 import PieChart from "@/components/PieChart";
 import BarChart from "@/components/BarChart";
 import type { FormSubmission } from "@/services/googleSheets";
+import { LayoutGrid, List } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface FormsDashboardClientProps {
   submissions: FormSubmission[];
@@ -17,6 +19,18 @@ interface DistributionEntry {
   count: number;
   percentage: number;
 }
+
+type ViewMode = "modal" | "cards";
+interface ViewModeOption {
+  id: ViewMode;
+  label: string;
+  Icon: LucideIcon;
+}
+
+const VIEW_MODE_OPTIONS: ViewModeOption[] = [
+  { id: "cards", label: "Cards completos", Icon: LayoutGrid },
+  { id: "modal", label: "Lista + modal", Icon: List },
+];
 
 const STATE_FLAGS = stateFlags;
 
@@ -348,7 +362,7 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
     const printWindow = window.open("", "_blank", "width=1024,height=768");
     if (!printWindow) return;
     printWindow.document.open();
-    printWindow.document.write(`<!doctype html><html class="${htmlClass}"><head><title>${organizationTitle} – FEBRACA</title>${headContent}<style>@page{margin:16mm;}body{padding:24px;background:#fff;}</style></head><body class="${bodyClass}">${printable}</body></html>`);
+    printWindow.document.write(`<!doctype html><html class="${htmlClass}"><head><title>${organizationTitle} – Dep. Alexandre Amaro</title>${headContent}<style>@page{margin:16mm;}body{padding:24px;background:#fff;}</style></head><body class="${bodyClass}">${printable}</body></html>`);
     printWindow.document.close();
     printWindow.addEventListener("load", () => {
       printWindow.focus();
@@ -505,7 +519,7 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
             <button
               type="button"
               onClick={handlePrintIndividual}
-              className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-xl border border-gray-200 text-gray-700 hover:border-[#0d2857] hover:text-[#0d2857] dark:border-gray-700 dark:text-gray-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-xl border border-gray-200 text-gray-700 hover:border-[#02186b] hover:text-[#02186b] dark:border-gray-700 dark:text-gray-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
             >
               Gerar PDF desta ONG
             </button>
@@ -528,7 +542,7 @@ function SingleSubmissionView({ submission }: { submission: FormSubmission }) {
           <div>
             <p className="text-xs uppercase tracking-widest text-gray-400">Status</p>
             <p>Atualizado em {formatDisplayDate(submission.finishedAt || submission.startedAt) || "—"}</p>
-            <p>Adesão ao FEBRACA Forms confirmada</p>
+            <p>Adesão ao painel Alexandre Amaro confirmada</p>
             <p>{submission.site || submission.instagram || "Sem canais digitais declarados"}</p>
           </div>
         </div>
@@ -744,6 +758,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
   const [selectedState, setSelectedState] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("modal");
 
   const handleExportPDF = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -773,6 +788,12 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
     setCurrentPage(1);
     setSelectedSubmissionId(null);
   }, [selectedState]);
+
+  useEffect(() => {
+    if (viewMode === "cards") {
+      setSelectedSubmissionId(null);
+    }
+  }, [viewMode]);
 
   const filteredSubmissions = useMemo(() => {
     if (!selectedState || selectedState === "all") return submissions;
@@ -1052,10 +1073,10 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
       <Header lastUpdate={lastUpdate} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 print:space-y-4">
-        <section className="bg-gradient-to-br from-[#0d2857] via-[#153b7d] to-emerald-600 text-white rounded-3xl shadow-xl border border-white/10 p-6 sm:p-8 print-page-break">
+        <section className="bg-gradient-to-br from-[#02186b] via-[#153b7d] to-emerald-600 text-white rounded-3xl shadow-xl border border-white/10 p-6 sm:p-8 print-page-break">
           <div className="flex flex-wrap gap-6 items-center justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-white/70">FEBRACA • FORMULÁRIOS</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-white/70">Gabinete Alexandre Amaro • Formulários</p>
               <h1 className="text-3xl sm:text-4xl font-bold mt-2 leading-tight">
                 Inteligência viva das ONGs de proteção animal
               </h1>
@@ -1069,7 +1090,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                 <select
                   value={selectedState}
                   onChange={(event) => setSelectedState(event.target.value)}
-                  className="w-full bg-white text-[#0d2857] font-semibold rounded-xl px-3 py-2 focus:outline-none"
+                  className="w-full bg-white text-[#02186b] font-semibold rounded-xl px-3 py-2 focus:outline-none"
                 >
                   <option value="all">Todos os estados</option>
                   {stateOptions.map((option) => (
@@ -1085,7 +1106,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
               <button
                 type="button"
                 onClick={handleExportPDF}
-                className="mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white text-[#0d2857] font-semibold text-sm shadow-lg shadow-black/20 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                className="mt-4 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white text-[#02186b] font-semibold text-sm shadow-lg shadow-black/20 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
               >
                 Gerar PDF com gráficos
               </button>
@@ -1136,7 +1157,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                     label: entry.label,
                     value: entry.count,
                     helper: `${entry.percentage}% da base filtrada`,
-                    color: "#0d2857",
+                    color: "#02186b",
                   }))}
                   emptyMessage="Nenhuma informação financeira nas respostas filtradas."
                 />
@@ -1164,7 +1185,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                       <div key={label}>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-600 dark:text-gray-300">{label}</span>
-                          <span className="text-xs font-semibold text-[#0d2857] dark:text-emerald-300">
+                          <span className="text-xs font-semibold text-[#02186b] dark:text-emerald-300">
                             {percentage}%
                           </span>
                         </div>
@@ -1318,7 +1339,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                   {analytics.recentSubmissions.map((submission) => (
                     <div key={submission.id} className="flex gap-3">
                       <div className="flex flex-col items-center">
-                        <span className="w-2 h-2 rounded-full bg-[#0d2857]" />
+                        <span className="w-2 h-2 rounded-full bg-[#02186b]" />
                         <span className="flex-1 w-px bg-gray-200 dark:bg-gray-700" />
                       </div>
                       <div>
@@ -1348,63 +1369,106 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Lista de ONGs</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Role até aqui para navegar pelos cadastros e clique em uma linha para abrir o modal com os gráficos individuais.
+                {viewMode === "modal"
+                  ? "Role até aqui para navegar pelos cadastros e clique em uma linha para abrir o modal com os gráficos individuais."
+                  : "Use esta aba para percorrer os cards completos sem precisar abrir modais."}
               </p>
             </div>
-            <span className="text-sm text-gray-400 dark:text-gray-500">
-              {filteredSubmissions.length} registro(s)
-            </span>
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-sm text-gray-400 dark:text-gray-500">
+                {filteredSubmissions.length} registro(s)
+              </span>
+              <div className="flex rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-1">
+                {VIEW_MODE_OPTIONS.map(({ id, label, Icon }) => {
+                  const isActive = viewMode === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setViewMode(id)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-xl transition-colors ${
+                        isActive
+                          ? "bg-white dark:bg-gray-800 text-[#02186b] dark:text-emerald-200 shadow"
+                          : "text-gray-500 dark:text-gray-400 hover:text-[#02186b] dark:hover:text-emerald-300"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span className="sr-only">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {paginatedSubmissions.map((submission) => {
-              const organizationName = submission.fantasyName || submission.legalName || "Organização sem nome";
-              const isSelected = submission.id === selectedSubmissionId;
-              const locationLabel = submission.city
-                ? submission.state
-                  ? `${submission.city} • ${submission.state}`
-                  : submission.city
-                : submission.state || "Local não informado";
-              return (
+          {viewMode === "modal" ? (
+            <div className="space-y-4">
+              {paginatedSubmissions.map((submission) => {
+                const organizationName = submission.fantasyName || submission.legalName || "Organização sem nome";
+                const isSelected = submission.id === selectedSubmissionId;
+                const locationLabel = submission.city
+                  ? submission.state
+                    ? `${submission.city} • ${submission.state}`
+                    : submission.city
+                  : submission.state || "Local não informado";
+                return (
+                  <article
+                    key={submission.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleSelectSubmission(submission.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleSelectSubmission(submission.id);
+                      }
+                    }}
+                    className={`group cursor-pointer border border-gray-100 dark:border-gray-700 rounded-2xl p-4 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#02186b] dark:focus-visible:ring-emerald-400 hover:-translate-y-0.5 hover:shadow-lg hover:border-emerald-200/80 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-500/10 ${isSelected
+                      ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-500/60 dark:bg-emerald-900/20"
+                      : "bg-white dark:bg-gray-900/20"}`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">{organizationName}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{locationLabel}</p>
+                      </div>
+                    </div>
+
+                    <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                      Clique para abrir o modal e analisar os gráficos completos desta ONG.
+                      <span className="inline-flex items-center gap-1 text-[#02186b] dark:text-emerald-300 font-semibold uppercase tracking-tight transition-transform duration-200 group-hover:translate-x-1">
+                        Ver detalhes
+                        <span aria-hidden className="text-base leading-none">↗</span>
+                      </span>
+                    </p>
+                  </article>
+                );
+              })}
+              {filteredSubmissions.length === 0 && (
+                <p className="py-6 text-center text-gray-500 dark:text-gray-400">
+                  Nenhuma resposta encontrada para o estado selecionado.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {paginatedSubmissions.map((submission) => (
                 <article
                   key={submission.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleSelectSubmission(submission.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      handleSelectSubmission(submission.id);
-                    }
-                  }}
-                  className={`group cursor-pointer border border-gray-100 dark:border-gray-700 rounded-2xl p-4 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d2857] dark:focus-visible:ring-emerald-400 hover:-translate-y-0.5 hover:shadow-lg hover:border-emerald-200/80 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-500/10 ${isSelected
-                    ? "border-emerald-300 bg-emerald-50/40 dark:border-emerald-500/60 dark:bg-emerald-900/20"
-                    : "bg-white dark:bg-gray-900/20"}`}
+                  className="border border-gray-100 dark:border-gray-700 rounded-3xl bg-gray-50 dark:bg-gray-900/30 shadow-sm hover:shadow-md transition-shadow"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{organizationName}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{locationLabel}</p>
-                    </div>
+                  <div className="p-4">
+                    <SingleSubmissionView submission={submission} />
                   </div>
-
-                  <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                    Clique para abrir o modal e analisar os gráficos completos desta ONG.
-                    <span className="inline-flex items-center gap-1 text-[#0d2857] dark:text-emerald-300 font-semibold uppercase tracking-tight transition-transform duration-200 group-hover:translate-x-1">
-                      Ver detalhes
-                      <span aria-hidden className="text-base leading-none">↗</span>
-                    </span>
-                  </p>
                 </article>
-              );
-            })}
-
-            {filteredSubmissions.length === 0 && (
-              <p className="py-6 text-center text-gray-500 dark:text-gray-400">
-                Nenhuma resposta encontrada para o estado selecionado.
-              </p>
-            )}
-          </div>
+              ))}
+              {filteredSubmissions.length === 0 && (
+                <p className="py-6 text-center text-gray-500 dark:text-gray-400">
+                  Nenhuma resposta encontrada para o estado selecionado.
+                </p>
+              )}
+            </div>
+          )}
 
           {filteredSubmissions.length > 0 && (
             <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4 text-sm">
@@ -1416,7 +1480,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                   type="button"
                   onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                  className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#02186b] hover:text-[#02186b] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
                 >
                   Anterior
                 </button>
@@ -1427,7 +1491,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
                   type="button"
                   onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                  className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#02186b] hover:text-[#02186b] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
                 >
                   Próxima
                 </button>
@@ -1438,7 +1502,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
 
       </main>
 
-      {selectedSubmission && (
+      {viewMode === "modal" && selectedSubmission && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm modal-overlay-appear"
@@ -1460,7 +1524,7 @@ export default function FormsDashboardClient({ submissions, lastUpdate }: FormsD
               <button
                 type="button"
                 onClick={() => setSelectedSubmissionId(null)}
-                className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-[#02186b] hover:text-[#02186b] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
               >
                 Fechar
               </button>

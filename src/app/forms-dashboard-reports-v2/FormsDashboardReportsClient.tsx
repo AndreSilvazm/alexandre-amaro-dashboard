@@ -384,7 +384,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
     const headContent = headClone.innerHTML;
     const htmlClass = document.documentElement.getAttribute("class") || "";
     const bodyClass = document.body.getAttribute("class") || "";
-    const title = `${selectedEntry.organization || "ONG"} – FEBRACA`;
+    const title = `${selectedEntry.organization || "ONG"} – Dep. Alexandre Amaro`;
     const isDarkMode = document.documentElement.classList.contains("dark");
     const bodyBackground = isDarkMode ? "#050916" : "#f8fafc";
     const bodyColor = isDarkMode ? "#f8fafc" : "#0f172a";
@@ -451,7 +451,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
         <section className={`${CARD_CLASS} bg-gradient-to-br from-white to-emerald-50/60 dark:from-gray-900 dark:to-gray-900/40`}>
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-300">Nova leitura FEBRACA</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-300">Nova leitura Alexandre Amaro</p>
               <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mt-2">
                 Necessidades declaradas nas compras de ração e apoio institucional
               </h1>
@@ -459,7 +459,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                 Este painel resume {filteredTotal} respostas
                 {hasActiveFilter && filteredTotal !== totalEntries ? ` (de ${totalEntries} totais)` : ""} das ONGs sobre consumo de
                 ração, prioridades de doação e fortalezas institucionais. Use os gráficos para identificar padrões por canal de
-                compra, marcas preferidas e gargalos estruturais que a FEBRACA pode endereçar primeiro.
+                compra, marcas preferidas e gargalos estruturais que o Gabinete Alexandre Amaro pode endereçar primeiro.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -699,7 +699,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                       setSelectedEntryKey(cardKey);
                     }
                   }}
-                  className={`group border border-gray-100 dark:border-gray-800 rounded-2xl p-4 transition-all duration-200 bg-white/80 dark:bg-gray-900/60 hover:-translate-y-0.5 hover:border-emerald-200/70 dark:hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-100/50 dark:hover:shadow-emerald-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d2857] dark:focus-visible:ring-emerald-400 ${isSelected ? "border-emerald-300 dark:border-emerald-500/60" : ""}`}
+                  className={`group border border-gray-100 dark:border-gray-800 rounded-2xl p-4 transition-all duration-200 bg-white/80 dark:bg-gray-900/60 hover:-translate-y-0.5 hover:border-emerald-200/70 dark:hover:border-emerald-500/60 hover:shadow-lg hover:shadow-emerald-100/50 dark:hover:shadow-emerald-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#02186b] dark:focus-visible:ring-emerald-400 ${isSelected ? "border-emerald-300 dark:border-emerald-500/60" : ""}`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
@@ -713,7 +713,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                   </div>
                   <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                     Clique para abrir o modal com detalhes completos.
-                    <span className="inline-flex items-center gap-1 text-[#0d2857] dark:text-emerald-300 font-semibold uppercase tracking-tight transition-transform duration-200 group-hover:translate-x-1">
+                    <span className="inline-flex items-center gap-1 text-[#02186b] dark:text-emerald-300 font-semibold uppercase tracking-tight transition-transform duration-200 group-hover:translate-x-1">
                       Ver detalhes
                       <span aria-hidden className="text-base leading-none">↗</span>
                     </span>
@@ -739,7 +739,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                   type="button"
                   onClick={() => setCurrentPage((previous) => Math.max(1, previous - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                  className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#02186b] hover:text-[#02186b] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
                 >
                   Anterior
                 </button>
@@ -750,7 +750,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                   type="button"
                   onClick={() => setCurrentPage((previous) => Math.min(totalPages, previous + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                  className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#02186b] hover:text-[#02186b] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
                 >
                   Próxima
                 </button>
@@ -813,14 +813,14 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                   <button
                     type="button"
                     onClick={handlePrintSelected}
-                    className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-[#0d2857] dark:text-emerald-200 hover:bg-[#0d2857] hover:text-white dark:hover:text-gray-900 dark:hover:bg-emerald-300 transition-colors"
+                    className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-300 dark:border-gray-600 text-[#02186b] dark:text-emerald-200 hover:bg-[#02186b] hover:text-white dark:hover:text-gray-900 dark:hover:bg-emerald-300 transition-colors"
                   >
                     Gerar PDF
                   </button>
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-[#0d2857] hover:text-[#0d2857] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
+                    className="px-3 py-1.5 text-sm font-medium rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-[#02186b] hover:text-[#02186b] dark:hover:border-emerald-500 dark:hover:text-emerald-300 transition-colors"
                   >
                     Fechar
                   </button>
@@ -828,7 +828,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
               </div>
 
               <div className="p-6 space-y-6 modal-content-reveal">
-                <div className="rounded-3xl bg-gradient-to-br from-[#0d2857] via-[#1d3b63] to-[#1f5b5f] text-white p-6 shadow-xl shadow-black/20">
+                <div className="rounded-3xl bg-gradient-to-br from-[#02186b] via-[#1d3b63] to-[#1f5b5f] text-white p-6 shadow-xl shadow-black/20">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
                       {stateFlagInfo && (
@@ -950,7 +950,7 @@ export default function FormsDashboardReportsClient({ entries, lastUpdate }: For
                         </div>
                         <div className="h-1.5 mt-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#0d2857] via-[#4b5a76] to-[#4a7b73]"
+                            className="h-full rounded-full bg-gradient-to-r from-[#02186b] via-[#4b5a76] to-[#4a7b73]"
                             style={{ width: `${(((selectedEntry.importance[key] ?? 0) as number) / 4) * 100}%` }}
                           />
                         </div>

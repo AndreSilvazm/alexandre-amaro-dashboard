@@ -44,7 +44,7 @@ export default function BarChart({
                 className="h-full rounded-full"
                 style={{
                   width,
-                  backgroundColor: item.color ?? "#0d2857",
+                  backgroundColor: item.color ?? "#02186b",
                   opacity: 0.9,
                 }}
               />

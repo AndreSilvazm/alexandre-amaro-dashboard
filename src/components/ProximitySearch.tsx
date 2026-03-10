@@ -421,7 +421,7 @@ export default function ProximitySearch({ ongs, onSearchResult, onSelectONG }: P
           <button
             onClick={handleUseCurrentLocation}
             disabled={isUsingGPS}
-            className="px-6 py-3 bg-white dark:bg-gray-800 border-2 border-[#0d2857] dark:border-blue-400 text-[#0d2857] dark:text-blue-400 rounded-xl font-medium hover:bg-[#0d2857] hover:text-white dark:hover:bg-blue-600 dark:hover:text-white dark:hover:border-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="px-6 py-3 bg-white dark:bg-gray-800 border-2 border-[#02186b] dark:border-blue-400 text-[#02186b] dark:text-blue-400 rounded-xl font-medium hover:bg-[#02186b] hover:text-white dark:hover:bg-blue-600 dark:hover:text-white dark:hover:border-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             title="Usar minha localização atual"
           >
             {isUsingGPS ? (

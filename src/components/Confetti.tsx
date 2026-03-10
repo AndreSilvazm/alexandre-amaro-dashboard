@@ -11,7 +11,7 @@ interface ConfettiPiece {
   size: number;
 }
 
-const COLORS = ['#0d2857', '#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#0EA5E9'];
+const COLORS = ['#02186b', '#ffca27', '#0c2fa3', '#10B981', '#F97316', '#0EA5E9'];
 
 export default function Confetti({ 
   isActive, 

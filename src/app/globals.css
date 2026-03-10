@@ -6,10 +6,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  /* FEBRACA Brand Colors */
-  --primary-blue: #0d2857;
-  --primary-blue-dark: #022873;
-  --primary-blue-light: #1e4080;
+  /* Alexandre Amaro Brand Colors */
+  --primary-blue: #02186b;
+  --primary-blue-dark: #010f45;
+  --primary-blue-light: #0c2fa3;
   /* Complementary Colors */
   --accent-emerald: #10B981;
   --accent-emerald-dark: #059669;
@@ -47,12 +47,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #0d2857;
+  background: #02186b;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #1e4080;
+  background: #0c2fa3;
 }
 
 /* Leaflet map container */
@@ -402,26 +402,26 @@ body {
   animation: modalContentFadeUp 0.45s ease-out both;
 }
 
-/* Gradient backgrounds - FEBRACA Theme with diversity */
+/* Gradient backgrounds - Alexandre Amaro Theme */
 .gradient-primary {
-  background: linear-gradient(135deg, #0d2857 0%, #022873 100%);
+  background: linear-gradient(135deg, #02186b 0%, #010f45 100%);
 }
 
 .gradient-emerald {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #10B981 0%, #047857 100%);
 }
 
 .gradient-hero {
-  background: linear-gradient(135deg, #0d2857 0%, #1e4080 50%, #10B981 100%);
+  background: linear-gradient(135deg, #02186b 0%, #0c2fa3 55%, #ffca27 100%);
 }
 
 /* Legacy classes for compatibility */
 .gradient-orange {
-  background: linear-gradient(135deg, #0d2857 0%, #1e4080 100%);
+  background: linear-gradient(135deg, #02186b 0%, #ffca27 100%);
 }
 
 .gradient-teal {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #059669 0%, #0ea5e9 100%);
 }
 
 /* Glass effect */
@@ -431,15 +431,15 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Button hover effects - FEBRACA Theme */
+/* Button hover effects - Alexandre Amaro Theme */
 .btn-primary {
-  background: linear-gradient(135deg, #0d2857 0%, #1e4080 100%);
+  background: linear-gradient(135deg, #02186b 0%, #0c2fa3 100%);
   transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(13, 40, 87, 0.4);
+  box-shadow: 0 10px 20px rgba(2, 24, 107, 0.4);
 }
 
 @media print {
@@ -479,13 +479,14 @@ body {
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #ffca27 0%, #d39b00 100%);
+  color: #02186b;
   transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 10px 20px rgba(255, 202, 39, 0.45);
 }
 
 /* Card hover effects */
@@ -498,9 +499,9 @@ body {
   box-shadow: 0 20px 40px rgba(13, 40, 87, 0.15);
 }
 
-/* Input focus effects - FEBRACA Blue Theme */
+/* Input focus effects - Alexandre Amaro Blue Theme */
 input:focus, select:focus {
   outline: none;
-  border-color: #0d2857;
-  box-shadow: 0 0 0 3px rgba(13, 40, 87, 0.15);
+  border-color: #02186b;
+  box-shadow: 0 0 0 3px rgba(2, 24, 107, 0.15);
 }

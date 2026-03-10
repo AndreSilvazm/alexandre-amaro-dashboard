@@ -1,7 +1,35 @@
 import Papa from 'papaparse';
 
 // URLs das planilhas do Google Sheets (exportadas como CSV)
-const URL_ONGS = "https://docs.google.com/spreadsheets/d/1YVvp_w_r51028aAITKqrWtQDI8p9aOs3GQDIojtm4J4/export?format=csv&gid=400372920";
+const URL_ONGS_SHEET_ID = "1-bsR7PiFA3rNcqqiMwuGlFdO-12yo75qyCVJ_s3Tcec";
+const URL_ONGS_SHEET_GID = "931082021";
+const URL_ONGS = `https://docs.google.com/spreadsheets/d/${URL_ONGS_SHEET_ID}/export?format=csv&gid=${URL_ONGS_SHEET_GID}`;
+
+const ONGS_SHEET_COLUMNS = {
+  cnpj: "CNPJ",
+  razaoSocial: "Razão Social",
+  nomeFantasia: "Nome Fantasia",
+  estado: "Estado",
+  cidade: "Cidade",
+  bairro: "Bairro",
+  endereco: "Endereço",
+  cep: "CEP",
+  ddd: "DDD",
+  telefone: "Telefone",
+  email: "Email",
+  latitude: "Latitude",
+  longitude: "Longitude",
+} as const;
+
+type OngSheetRow = Record<string, string | undefined>;
+
+type OngSheetColumnKey = keyof typeof ONGS_SHEET_COLUMNS;
+
+function getOngSheetValue(row: OngSheetRow, columnKey: OngSheetColumnKey) {
+  const header = ONGS_SHEET_COLUMNS[columnKey];
+  const rawValue = row[header];
+  return typeof rawValue === "string" ? rawValue.trim() : "";
+}
 const URL_SOCIOS = "https://docs.google.com/spreadsheets/d/1gn4nwKL3mvzvRNozAoiBGO15M8MJA2YfaIcJhAS1WiY/export?format=csv&gid=1270428080";
 const URL_FORMS = "https://docs.google.com/spreadsheets/d/16M-DnozXl-9eEA3sxH_5xstGshBimEJ9nPz-IyiYI-E/export?format=csv&gid=939834754";
 const URL_FORMS_REPORTS_V2 = "https://docs.google.com/spreadsheets/d/1PfkvU4XEINlpMzanbDm44C0mi2QjyxBkDtT0blLCGDY/export?format=csv&gid=59752032";
@@ -77,7 +105,7 @@ const FORM_COLUMNS = {
   volunteerTerm: "Todos os seus voluntários assinam o Termo de Adesão ao Voluntário?",
   workWithPublicPower: "A sua ONG atua em conjunto com o poder público para melhorar a efetivação das leis de proteção animal na cidade?\n",
   improvements: "Resumidamente, o que você deseja ver de melhorias para as ONGs de proteção animal?\n",
-  congressMessage: "Se você quisesse que a FEBRACA levasse uma mensagem sua no Congresso Nacional, para todos os deputados ouvirem, qual seria?\n",
+  congressMessage: "Se você quisesse que o Deputado Alexandre Amaro levasse uma mensagem sua no Congresso Nacional, para todos os parlamentares ouvirem, qual seria?\n",
   confirmation: "Você declara que todas as informações acima são verdadeiras?",
 } as const;
 
@@ -327,6 +355,14 @@ export function formatPhone(ddd: string | null, telefone: string | null): { disp
   return { display, digits, isMobile };
 }
 
+function normalizeDecimalString(value: string) {
+  if (!value) return value;
+  if (value.includes(',')) {
+    return value.replace(/\./g, '').replace(',', '.');
+  }
+  return value;
+}
+
 // Função para buscar CSV de uma URL
 async function fetchCSV<T>(url: string): Promise<T[]> {
   try {
@@ -360,7 +396,46 @@ async function fetchCSV<T>(url: string): Promise<T[]> {
 
 // Função para buscar ONGs
 export async function fetchONGs(): Promise<ONGRaw[]> {
-  return fetchCSV<ONGRaw>(URL_ONGS);
+  const rows = await fetchCSV<OngSheetRow>(URL_ONGS);
+
+  return rows
+    .map((row, index) => {
+      const cnpjDigits = extractDigits(getOngSheetValue(row, "cnpj"));
+      if (cnpjDigits.length < 8) {
+        console.warn(`⚠️ Linha ${index + 1} ignorada por CNPJ inválido`);
+        return null;
+      }
+
+      const normalizedCnpj = cnpjDigits.slice(0, 14).padStart(14, "0");
+      const cnpjBasico = normalizedCnpj.slice(0, 8);
+
+      let ddd = extractDigits(getOngSheetValue(row, "ddd"));
+      let phoneDigits = extractDigits(getOngSheetValue(row, "telefone"));
+      if (!ddd && phoneDigits.length > 9) {
+        ddd = phoneDigits.slice(0, 2);
+        phoneDigits = phoneDigits.slice(2);
+      }
+
+      return {
+        cnpj_basico: cnpjBasico,
+        cnpj_completo: normalizedCnpj,
+        razao_social: getOngSheetValue(row, "razaoSocial") || "Nome não informado",
+        nome_fantasia: getOngSheetValue(row, "nomeFantasia"),
+        uf: getOngSheetValue(row, "estado").toUpperCase(),
+        cidade: getOngSheetValue(row, "cidade"),
+        lat: normalizeDecimalString(getOngSheetValue(row, "latitude")),
+        lng: normalizeDecimalString(getOngSheetValue(row, "longitude")),
+        logradouro: getOngSheetValue(row, "endereco"),
+        bairro: getOngSheetValue(row, "bairro"),
+        cep: extractDigits(getOngSheetValue(row, "cep")),
+        ddd1: ddd,
+        telefone1: phoneDigits,
+        ddd2: "",
+        telefone2: "",
+        email: getOngSheetValue(row, "email"),
+      } satisfies ONGRaw;
+    })
+    .filter((ong): ong is ONGRaw => Boolean(ong));
 }
 
 // Função para buscar Sócios
